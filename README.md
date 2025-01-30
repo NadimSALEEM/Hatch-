@@ -1,2 +1,2 @@
 # Hatch-
-L'application Hatch! a été créé à des objectifs éducatif. Cet application sert à gérer les habitudes.
+L'application Hatch! a été créé à des objectifs éducatifs. Cet application sert à gérer les habitudes.
