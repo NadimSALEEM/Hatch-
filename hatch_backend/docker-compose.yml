@@ -1,0 +1,56 @@
+services:
+  hatch_api:
+    build: ./api
+    container_name: hatch_api
+    volumes:
+      - ./api/app:/code/app
+    ports:
+      - 8080:80
+    env_file:
+      - ./api/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ntwrk
+    develop:
+      watch:
+        - path: ./api
+          action: rebuild
+          target: /code
+
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: hatch
+      POSTGRES_PASSWORD: hatch
+      POSTGRES_DB: hatch
+    container_name: hatch_db
+    env_file:
+      - ./db/.env
+    # Décommentez cette ligne pour stocker les données de la DB localement
+    # volumes:
+    #   - ./db/data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    networks:
+      - ntwrk
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+  # Interface graphique pour gérer la base de données (désactiver en production)
+  adminer:
+    image: adminer
+    container_name: hatch_adminer
+    ports:
+      - 8181:8080
+    networks:
+      - ntwrk
+
+networks:
+  ntwrk:
+    driver: bridge
