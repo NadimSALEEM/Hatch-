@@ -50,9 +50,6 @@ __API REST__ développée en Python avec le framework __FastAPI__ (<https://fast
 
 --
 
-La structure et l’arborescence de ce projet sont inspirées par:
+La structure et l’arborescence de ce projet sont inspirées par M.__Alexandre Leroux__ :
 https://github.com/shrp777/todolist-rest-api
 https://github.com/shrp777/todolist-flutter
-
-Crée par M.
-__Alexandre Leroux__  
