@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.models.coach import Coach
+from hatch_backend.api.app.models.coach1 import Coach
 from app.schemas.coach import CoachRecommandationDTO
 from app.routers.auth import get_current_user
 from app.models.user import Utilisateur

@@ -28,8 +28,8 @@ services:
     env_file:
       - ./db/.env
     # Décommentez cette ligne pour stocker les données de la DB localement
-    volumes:
-      - ./db/data:/var/lib/postgresql/data/
+    #volumes:
+    #  - ./db/data:/var/lib/postgresql/data/
     ports:
       - 5432:5432
     networks:

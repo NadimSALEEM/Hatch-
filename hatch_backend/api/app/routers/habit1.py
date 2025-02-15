@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from uuid import uuid4
 from datetime import datetime
-from app.models.habit import Habitude, HabitudeCréationDTO, HabitudeLectureDTO, HabitudeMiseÀJourDTO, StatutHabitude
+from hatch_backend.api.app.models.habit1 import Habitude, HabitudeCréationDTO, HabitudeLectureDTO, HabitudeMiseÀJourDTO, StatutHabitude
 from app.db import get_db
 
 router = APIRouter(

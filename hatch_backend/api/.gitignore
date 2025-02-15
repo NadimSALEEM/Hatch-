@@ -181,11 +181,6 @@ data/
 .env
 .secrets
 
-# Ignore Python cache and compiled files
-__pycache__/
-*.pyc
-*.pyo
-
 # Ignore Docker-related files
 docker-compose.override.yml
 
