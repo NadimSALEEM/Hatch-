@@ -5,15 +5,15 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from pydantic import BaseModel
+from sqlalchemy.orm import relationship
 
 # Charger l'URL de la base de données depuis les variables d'environnement
 DB_URL = os.getenv('DATABASE_URL')
 
+# Créer un moteur de base de données
 engine = create_engine(DB_URL)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
 
 class Coach(Base):
     # Modèle de base de données pour la table "coaches"
@@ -21,12 +21,15 @@ class Coach(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     utilisateur_id = Column(Integer, ForeignKey("utilisateurs.id"), nullable=False)  # Lié à un utilisateur
+
+    # Relation avec la table "utilisateurs" (à supprimer après la création de la table "coaches") !!!!!!!!!!!!!!!!!!!!!!!!
+    utilisateur = relationship("Utilisateur", back_populates="coaches")
+
     recommandation = Column(String, nullable=False)  # Message du coach
     créé_le = Column(DateTime, default=datetime.utcnow)
 
 
 # Modèles Pydantic pour l'API Coach
-
 
 class CoachRecommandationDTO(BaseModel):
     # Modèle pour stocker une recommandation du coach

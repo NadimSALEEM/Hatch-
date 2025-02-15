@@ -1,7 +1,6 @@
 services:
   hatch_api:
     build: ./api
-    container_name: hatch_api
     volumes:
       - ./api/app:/code/app
     ports:
@@ -26,12 +25,11 @@ services:
       POSTGRES_USER: hatch
       POSTGRES_PASSWORD: hatch
       POSTGRES_DB: hatch
-    container_name: hatch_db
     env_file:
       - ./db/.env
     # Décommentez cette ligne pour stocker les données de la DB localement
-    # volumes:
-    #   - ./db/data:/var/lib/postgresql/data/
+    volumes:
+      - ./db/data:/var/lib/postgresql/data/
     ports:
       - 5432:5432
     networks:
@@ -43,9 +41,8 @@ services:
       retries: 10
 
   # Interface graphique pour gérer la base de données (désactiver en production)
-  adminer:
+  hatch_adminer:
     image: adminer
-    container_name: hatch_adminer
     ports:
       - 8181:8080
     networks:
@@ -54,3 +51,5 @@ services:
 networks:
   ntwrk:
     driver: bridge
+
+

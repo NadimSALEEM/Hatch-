@@ -21,6 +21,7 @@ class Utilisateur(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     nom_utilisateur = Column(String, unique=True, index=True)
+
     email = Column(String, unique=True, index=True)
     mot_de_passe_haché = Column(String, nullable=False)
     créé_le = Column(DateTime, default=datetime.utcnow)
@@ -43,7 +44,7 @@ class UtilisateurMiseÀJourDTO(BaseModel):
     # Modèle pour la mise à jour des informations d'un utilisateur
     photo_profil: str = None
     biographie: str = None
-    coach_assigné: int = None
+    # coach_assigné: int = None  # ID du coach si assigné
 
 
 class UtilisateurLectureDTO(BaseModel):
@@ -53,7 +54,7 @@ class UtilisateurLectureDTO(BaseModel):
     email: str
     photo_profil: str = None
     biographie: str = None
-    coach_assigné: int = None
+    # coach_assigné: int = None  # ID du coach si assigné
 
     class Config:
         orm_mode = True

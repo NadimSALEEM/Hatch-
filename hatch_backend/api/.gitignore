@@ -175,4 +175,18 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
+# Ignore database and secret files
+data/
+*.db
+.env
+.secrets
+
+# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore Docker-related files
+docker-compose.override.yml
+
 # End of https://www.toptal.com/developers/gitignore/api/python

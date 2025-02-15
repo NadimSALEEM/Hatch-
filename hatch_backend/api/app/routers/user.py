@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.user import Utilisateur
-from app.schemas.user import UtilisateurLectureDTO, UtilisateurMiseÀJourDTO
+from app.models.user import UtilisateurLectureDTO, UtilisateurMiseÀJourDTO
 from app.routers.auth import get_current_user
 
 router = APIRouter(
@@ -33,8 +33,8 @@ def mettre_a_jour_profil(update_data: UtilisateurMiseÀJourDTO, utilisateur_emai
         utilisateur.photo_profil = update_data.photo_profil
     if update_data.biographie:
         utilisateur.biographie = update_data.biographie
-    if update_data.coach_assigné is not None:
-        utilisateur.coach_assigné = update_data.coach_assigné
+    # if update_data.coach_assigné is not None:
+    #     utilisateur.coach_assigné = update_data.coach_assigné
 
     db.commit()
     return {"result": "success", "code": 200, "detail": "Profil mis à jour"}
