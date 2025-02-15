@@ -1,0 +1,15 @@
+meta {
+  name: Access Token
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/auth/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzM5NjU4NzczfQ.JaSC2z8Zk9x8MzJLW2-THA1DRC8yv9WaE7fCWs0dodM
+}
