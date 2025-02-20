@@ -12,7 +12,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',  // Définir l'écran de démarrage
+      initialRoute: '/', // Définir l'écran de démarrage test
       routes: {
         '/': (context) => const Bienvenue1(),
         '/Bienvenue2': (context) => const Bienvenue2(),
@@ -23,7 +23,8 @@ class MainApp extends StatelessWidget {
         '/parametres_compte': (context) => const ParametresCompte(),
         '/profil': (context) => const Profil(),
         '/questionnaire': (context) => const Questionnaire(),
-        '/init_nouveau_mot_de_passe': (context) => const InitNouveauMotDePasse(),
+        '/init_nouveau_mot_de_passe': (context) =>
+            const InitNouveauMotDePasse(),
         '/creer_objectif': (context) => const CreerObjectif(),
         '/creer_une_habitude': (context) => const CreerHabitude(),
         '/habitude': (context) => const Habitude(),
@@ -40,7 +41,6 @@ class MainApp extends StatelessWidget {
     );
   }
 }
-
 
 class NotFoundPage extends StatelessWidget {
   const NotFoundPage({Key? key}) : super(key: key);
