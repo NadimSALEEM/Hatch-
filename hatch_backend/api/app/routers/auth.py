@@ -1,11 +1,9 @@
 from fastapi import Depends, HTTPException, APIRouter, status
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.models.user import Utilisateur
-from app.models.user import UtilisateurLectureDTO, UtilisateurMiseÀJourDTO, UtilisateurCréationDTO
+from app.models.user import Utilisateur, CreerUtilisateur, MiseAJourUtilisateur, LireUtilisateur
 from app.internal.auth_utils import hash_password, verify_password, create_access_token
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from app.internal.auth_utils import decode_access_token
 
 router = APIRouter(
@@ -19,7 +17,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Authenticate a user and return a JWT token."""
     utilisateur = db.query(Utilisateur).filter(Utilisateur.email == form_data.username).first()
-    if not utilisateur or not verify_password(form_data.password, utilisateur.mot_de_passe_haché):
+    if not utilisateur or not verify_password(form_data.password, utilisateur.mot_de_passe_hache):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -45,7 +43,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return {"email": utilisateur.email, "message": "Authenticated"}
 
 @router.post("/register")
-def register_user(user: UtilisateurCréationDTO, db: Session = Depends(get_db)):
+def register_user(user: CreerUtilisateur, db: Session = Depends(get_db)):
     """Register a new user with hashed password."""
     existing_user = db.query(Utilisateur).filter(Utilisateur.email == user.email).first()
     if existing_user:
@@ -55,7 +53,12 @@ def register_user(user: UtilisateurCréationDTO, db: Session = Depends(get_db)):
     new_user = Utilisateur(
         nom_utilisateur=user.nom_utilisateur,
         email=user.email,
-        mot_de_passe_haché=hashed_password,
+        telephone=user.telephone,
+        date_naissance=user.date_naissance,
+        photo_profil=user.photo_profil,
+        biographie=user.biographie,
+        mot_de_passe_hache=hashed_password,
+        coach_assigne=user.coach_assigne,
     )
     db.add(new_user)
     db.commit()

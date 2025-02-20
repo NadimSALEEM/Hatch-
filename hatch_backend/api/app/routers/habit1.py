@@ -12,18 +12,18 @@ router = APIRouter(
 )
 
 @router.get("/endpoint")
-async def endpoint_personnalisé():
+async def endpoint_personnalise():
     return {"message": "Ceci est un endpoint personnalisé pour les habitudes"}
 
 @router.post("/", status_code=201)
-def créer_habitude(habitude: HabitudeCréationDTO, db: Session = Depends(get_db)):
+def creer_habitude(habitude: HabitudeCréationDTO, db: Session = Depends(get_db)):
     habitude_nouvelle = Habitude(
         id=str(uuid4()),
         nom=habitude.nom,
         description=habitude.description,
         statut=habitude.statut,
-        fréquence=habitude.fréquence,
-        échéance=habitude.échéance
+        frequence=habitude.frequence,
+        echeance=habitude.echeance
     )
     db.add(habitude_nouvelle)
     db.commit()
@@ -55,8 +55,8 @@ def mettre_a_jour_habitude(habitude_id: str, habitude_update: HabitudeMiseÀJour
             nom=habitude_update.nom,
             description=habitude_update.description,
             statut=habitude_update.statut,
-            fréquence=habitude_update.fréquence,
-            échéance=habitude_update.échéance
+            frequence=habitude_update.frequence,
+            echeance=habitude_update.echeance
         )
         db.add(habitude_nouvelle)
         db.commit()
@@ -66,10 +66,10 @@ def mettre_a_jour_habitude(habitude_id: str, habitude_update: HabitudeMiseÀJour
     for key, value in habitude_update.dict(exclude_unset=True).items():
         setattr(habitude, key, value)
 
-    if habitude.statut == StatutHabitude.terminé:
-        habitude.terminé_le = datetime.now()
+    if habitude.statut == StatutHabitude.termine:
+        habitude.termine_le = datetime.now()
     else:
-        habitude.terminé_le = None
+        habitude.termine_le = None
 
     db.commit()
     db.refresh(habitude)
@@ -83,10 +83,10 @@ def mettre_a_jour_statut(habitude_id: str, statut_update: StatutHabitude, db: Se
 
     habitude.statut = statut_update
 
-    if habitude.statut == StatutHabitude.terminé:
-        habitude.terminé_le = datetime.now()
+    if habitude.statut == StatutHabitude.termine:
+        habitude.termine_le = datetime.now()
     else:
-        habitude.terminé_le = None
+        habitude.termine_le = None
 
     db.commit()
     db.refresh(habitude)

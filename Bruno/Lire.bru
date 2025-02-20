@@ -1,15 +1,20 @@
 meta {
-  name: Access Token
+  name: Lire
   type: http
-  seq: 3
+  seq: 4
 }
 
 get {
-  url: http://localhost:8080/auth/me
-  body: none
+  url: http://localhost:8080/users/me
+  body: formUrlEncoded
   auth: none
 }
 
 headers {
   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJub3V2ZWF1QGV4YW1wbGUuY29tIiwiZXhwIjoxNzQwMDU2MzA0fQ.i7iuSkM7tv4Tnbg0vJw3sEBJwWErK0UNVK37Fq7diIU
+}
+
+body:form-urlencoded {
+  username: test@example.com
+  password: password123
 }

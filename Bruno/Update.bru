@@ -1,0 +1,23 @@
+meta {
+  name: Update
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:8080/users/me/update
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzQwMDU2MDc2fQ.2zG5aDpWyPj38E5Nj16a9fCk8bPkhuTPPvS-BBIQde0
+}
+
+body:json {
+  {
+    "nom_utilisateur": "nouveau_nom",
+    "email": "nouveau@example.com",
+    "telephone": "+33 6 12 34 56 78"
+  }
+}

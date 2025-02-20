@@ -20,9 +20,9 @@ Base = declarative_base()
 
 class StatutHabitude(str, enum.Enum):
     # Enum pour suivre la progression des habitudes
-    non_commencé = "non_commencé"
+    non_commence = "non_commencé"
     en_cours = "en_cours"
-    terminé = "terminé"
+    termine = "terminé"
 
 
 class Habitude(Base):
@@ -33,12 +33,12 @@ class Habitude(Base):
     utilisateur_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Association à un utilisateur
     nom = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    statut = Column(Enum(StatutHabitude), default=StatutHabitude.non_commencé)
-    créé_le = Column(DateTime, default=datetime.utcnow)
+    statut = Column(Enum(StatutHabitude), default=StatutHabitude.non_commence)
+    cree_le = Column(DateTime, default=datetime.utcnow)
     mis_à_jour_le = Column(DateTime, nullable=True, onupdate=datetime.utcnow)
-    terminé_le = Column(DateTime, nullable=True)
-    fréquence = Column(String, nullable=False)  # Exemple : "quotidien", "hebdomadaire"
-    échéance = Column(DateTime, nullable=True)
+    termine_le = Column(DateTime, nullable=True)
+    frequence = Column(String, nullable=False)  # Exemple : "quotidien", "hebdomadaire"
+    echeance = Column(DateTime, nullable=True)
 
 
 # Modèles Pydantic pour l'API Habitudes
@@ -47,16 +47,16 @@ class Habitude(Base):
 class HabitudeStatutDTO(BaseModel):
     # Modèle pour la mise à jour du statut d'une habitude
     id: str
-    statut: StatutHabitude = StatutHabitude.non_commencé
+    statut: StatutHabitude = StatutHabitude.non_commence
 
 
 class HabitudeCréationDTO(BaseModel):
     # Modèle pour la création d'une nouvelle habitude
     nom: str
     description: Optional[str] = None
-    statut: StatutHabitude = StatutHabitude.non_commencé
-    fréquence: str  # "quotidien", "hebdomadaire", "mensuel"
-    échéance: Optional[datetime] = None
+    statut: StatutHabitude = StatutHabitude.non_commence
+    frequence: str  # "quotidien", "hebdomadaire", "mensuel"
+    echeance: Optional[datetime] = None
 
 
 class HabitudeMiseÀJourDTO(BaseModel):
@@ -65,8 +65,8 @@ class HabitudeMiseÀJourDTO(BaseModel):
     nom: Optional[str] = None
     description: Optional[str] = None
     statut: Optional[StatutHabitude] = None
-    terminé_le: Optional[datetime] = None
-    échéance: Optional[datetime] = None
+    termine_le: Optional[datetime] = None
+    echeance: Optional[datetime] = None
 
 
 class HabitudeLectureDTO(BaseModel):
@@ -75,10 +75,10 @@ class HabitudeLectureDTO(BaseModel):
     nom: str
     description: Optional[str]
     statut: StatutHabitude
-    créé_le: datetime
-    terminé_le: Optional[datetime]
-    échéance: Optional[datetime]
-    fréquence: str
+    cree_le: datetime
+    termine_le: Optional[datetime]
+    echeance: Optional[datetime]
+    frequence: str
 
     class Config:
         orm_mode = True

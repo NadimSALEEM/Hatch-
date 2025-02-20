@@ -37,4 +37,4 @@ def read_root():
     """
     Racine de l'API
     """
-    return {"message": "Hatch Habits API 🚀"}
+    return {"message": "Hatch Habits API"}

@@ -26,7 +26,7 @@ class Coach(Base):
     utilisateur = relationship("Utilisateur", back_populates="coaches")
 
     recommandation = Column(String, nullable=False)  # Message du coach
-    créé_le = Column(DateTime, default=datetime.utcnow)
+    cree_le = Column(DateTime, default=datetime.utcnow)
 
 
 # Modèles Pydantic pour l'API Coach
@@ -42,7 +42,7 @@ class CoachLectureDTO(BaseModel):
     id: int
     utilisateur_id: int
     recommandation: str
-    créé_le: datetime
+    cree_le: datetime
 
     class Config:
         orm_mode = True

@@ -34,6 +34,27 @@ class MainApp extends StatelessWidget {
         '/choix_coach': (context) => const ChoixCoach(),
         '/coach': (context) => const Coach(),
       },
+      onUnknownRoute: (settings) {
+        return MaterialPageRoute(builder: (context) => const NotFoundPage());
+      },
+    );
+  }
+}
+
+
+class NotFoundPage extends StatelessWidget {
+  const NotFoundPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Erreur 404")),
+      body: const Center(
+        child: Text(
+          "Page non trouvée !",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
     );
   }
 }
