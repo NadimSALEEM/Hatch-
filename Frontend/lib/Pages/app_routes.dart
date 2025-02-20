@@ -1,7 +1,7 @@
 // Scenario 1
 export 'package:hatch/Pages/Scenario1/bienvenue1.dart';
 export 'package:hatch/Pages/Scenario1/bienvenue2.dart';
-export 'package:hatch/Pages/Scenario1/acceuil.dart';
+export 'package:hatch/Pages/Scenario1/accueil.dart';
 export 'package:hatch/Pages/Scenario1/creer_un_compte.dart';
 export 'package:hatch/Pages/Scenario1/se_connecter.dart';
 export 'package:hatch/Pages/Scenario1/Reinit_mot_de_passe.dart';
