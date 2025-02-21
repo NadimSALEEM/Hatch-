@@ -41,7 +41,7 @@ class _SeConnecterState extends State<SeConnecter> {
     //Envoi de la requête HTTP
     try {
       Response response = await _dio.post(
-        'http://localhost:80/auth/token',
+        'http://localhost:8080/auth/token',
         options: Options(contentType: Headers.formUrlEncodedContentType),
         data: {
           'username': _emailController.text.trim(),
@@ -53,7 +53,7 @@ class _SeConnecterState extends State<SeConnecter> {
       if (response.data.containsKey('access_token')) {
         String token = response.data['access_token'];
         await _storage.write(key: 'jwt_token', value: token);
-        _logger.i("✅ Login Success: Token -> $token");
+        _logger.i("Login Success: Token -> $token");
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -65,7 +65,7 @@ class _SeConnecterState extends State<SeConnecter> {
       //Gestion des erreurs
     } catch (e) {
       if (e is DioException) {
-        _logger.e("🛠️ Error Response: ${e.response?.data}");
+        _logger.e("Error Response: ${e.response?.data}");
       }
       setState(() {
         _errorMessage = "Échec de la connexion. Vérifiez vos identifiants.";

@@ -1,6 +1,7 @@
 services:
   hatch_api:
     build: ./api
+    container_name: hatch_api
     volumes:
       - ./api/app:/code/app
     ports:
@@ -20,6 +21,7 @@ services:
 
   db:
     image: postgres:latest
+    container_name: hatch_api_db
     restart: always
     environment:
       POSTGRES_USER: hatch
@@ -43,6 +45,7 @@ services:
   # Interface graphique pour gérer la base de données (désactiver en production)
   hatch_adminer:
     image: adminer
+    container_name: hatch_api_adminer
     ports:
       - 8181:8080
     networks:
