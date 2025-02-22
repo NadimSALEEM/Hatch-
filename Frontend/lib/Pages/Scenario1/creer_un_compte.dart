@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:email_validator/email_validator.dart'; //validation du format des emails
+import 'package:dio/dio.dart'; // Requêtes HTTP
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Stockage sécurisé
+import 'package:logger/logger.dart';
+import 'package:email_validator/email_validator.dart';
 
 class CreerUnCompte extends StatefulWidget {
   const CreerUnCompte({Key? key}) : super(key: key);
@@ -16,6 +19,10 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final Dio _dio = Dio(); // Client HTTP
+  final Logger _logger = Logger(); // Logger pour debug
+
 
   //Variables pour valider les différents champs de saisie
   bool _acceptTerms = false;
@@ -30,6 +37,71 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
   final RegExp _usernameRegExp = RegExp(r'^[a-zA-Z0-9_]{3,}$'); 
   final RegExp _phoneRegExp = RegExp(r'^\d{10}$');
   final RegExp _passwordRegExp = RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
+
+  bool _loading = false; // Indicateur de chargement
+  String? _errorMessage; // Message d'erreur affiché à l'utilisateur
+
+  Future<void> _register() async {
+    setState(() {
+      _loading = true;
+      _errorMessage = null;
+    });
+
+    // Correction du format de la date (JJ/MM/AAAA → AAAA-MM-JJ)
+    String formattedDate = _dobController.text.trim();
+    List<String> parts = formattedDate.split('/');
+    if (parts.length == 3) {
+      formattedDate = "${parts[2]}-${parts[1]}-${parts[0]}"; // Transforme "01/02/2010" → "2010-02-01"
+    }
+
+    // Correction des noms des variables pour correspondre au backend
+    Map<String, dynamic> requestData = {
+      "nom_utilisateur": _usernameController.text.trim(),
+      "email": _emailController.text.trim(),
+      "telephone": _phoneController.text.trim(),
+      "mot_de_passe": _passwordController.text,
+      "date_naissance": formattedDate,
+    };
+
+    _logger.i("Requête envoyée par Flutter: $requestData"); // Log des données envoyées
+
+    try {
+      Response response = await _dio.post(
+        'http://localhost:8080/auth/register',
+        options: Options(contentType: Headers.jsonContentType), 
+        data: requestData,
+      );
+
+      _logger.i("Réponse API: ${response.data}");
+
+      if (response.data.containsKey('message')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Inscription réussie !')),
+        );
+        Navigator.pushNamed(context, '/home');
+      }
+    } on DioError catch (e) {
+      _logger.e("Erreur API: ${e.response?.data}");
+
+      if (e.response?.data.containsKey('message')) {
+        setState(() {
+          _errorMessage = e.response?.data['message'];
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Une erreur inconnue s\'est produite';
+        });
+      }
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -462,11 +534,11 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
     );
   }
 
-  //Bouton inscription
+    // Bouton inscription
   Widget _buildSignupButton() {
     return ElevatedButton(
-      onPressed: (_acceptTerms && _isEmailValid)
-          ? () => Navigator.pushNamed(context, '/questionnaire')
+      onPressed: (_acceptTerms && _isEmailValid && !_loading)  // ✅ Ajoute !_loading pour éviter double clic
+          ? _register // ✅ Appelle la fonction d'inscription
           : null,
       style: ElevatedButton.styleFrom(
           padding: EdgeInsets.zero, backgroundColor: Colors.transparent),
@@ -482,11 +554,14 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
         ),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 130),
-          child: const Text('Inscription',
-              style: TextStyle(
-                  fontSize: 15, fontFamily: 'Nunito', color: Colors.white)),
+          child: _loading
+              ? const CircularProgressIndicator(color: Colors.white) // ✅ Ajout d'un loader
+              : const Text('Inscription',
+                  style: TextStyle(
+                      fontSize: 15, fontFamily: 'Nunito', color: Colors.white)),
         ),
       ),
     );
   }
+
 }

@@ -44,12 +44,22 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 @router.post("/register")
 def register_user(user: CreerUtilisateur, db: Session = Depends(get_db)):
-    """Register a new user with hashed password."""
-    existing_user = db.query(Utilisateur).filter(Utilisateur.email == user.email).first()
+    """Inscription d'un nouvel utilisateur avec mot de passe hashé."""
+
+    # Vérifier si l'email ou le téléphone existent déjà
+    existing_user = db.query(Utilisateur).filter(
+        (Utilisateur.email == user.email) | (Utilisateur.telephone == user.telephone)
+    ).first()
+
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(
+            status_code=400,
+            detail="Ce compte existe déjà avec cet email ou téléphone."
+        )
 
     hashed_password = hash_password(user.mot_de_passe)
+
+    # Création de l'utilisateur
     new_user = Utilisateur(
         nom_utilisateur=user.nom_utilisateur,
         email=user.email,
@@ -62,4 +72,9 @@ def register_user(user: CreerUtilisateur, db: Session = Depends(get_db)):
     )
     db.add(new_user)
     db.commit()
-    return {"message": "User registered successfully"}
+    db.refresh(new_user)
+
+    return {
+        "message": "Utilisateur créé avec succès",
+        "user_id": new_user.id
+    }

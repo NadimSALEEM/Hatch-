@@ -24,7 +24,7 @@ class Utilisateur(Base):
     email = Column(String, unique=True, index=True)
     mot_de_passe_hache = Column(String, nullable=False)
     telephone = Column(String, unique=True, index=True, nullable=False)
-    date_naissance = Column(DateTime, nullable=True)
+    date_naissance = Column(String, nullable=True)
     cree_le = Column(DateTime, default=datetime.utcnow)
     photo_profil = Column(String, nullable=True)
     biographie = Column(String, nullable=True)
@@ -36,7 +36,7 @@ class CreerUtilisateur(BaseModel):
     email: str
     telephone: str
     mot_de_passe: str
-    date_naissance: Optional[datetime] = None
+    date_naissance: Optional[str] = None
     photo_profil: Optional[str] = None
     biographie: Optional[str] = None
     coach_assigne: Optional[int] = None
@@ -45,7 +45,7 @@ class MiseAJourUtilisateur(BaseModel):
     nom_utilisateur: Optional[str] = None
     email: Optional[str] = None
     telephone: Optional[str] = None
-    date_naissance: Optional[datetime] = None
+    date_naissance: Optional[str] = None
     photo_profil: Optional[str] = None
     biographie: Optional[str] = None
     coach_assigne: Optional[int] = None
@@ -55,7 +55,7 @@ class LireUtilisateur(BaseModel):
     nom_utilisateur: str
     email: str
     telephone: Optional[str] = None
-    date_naissance: Optional[datetime] = None
+    date_naissance: Optional[str] = None
     photo_profil: Optional[str] = None
     biographie: Optional[str] = None
     coach_assigne: Optional[int] = None
