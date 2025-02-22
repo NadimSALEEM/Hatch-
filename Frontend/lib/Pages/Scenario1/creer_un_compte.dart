@@ -323,7 +323,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
             onTap: () async {
               DateTime? pickedDate = await showDatePicker(
                 context: context,
-                initialDate: DateTime.now().subtract(const Duration(days: 365 * 15)), // Par défaut 15 ans en arrière
+                initialDate: DateTime.now().subtract(const Duration(days: 365 * 13)), // Par défaut 15 ans en arrière
                 firstDate: DateTime(1900),
                 lastDate: DateTime.now(), 
               );
@@ -339,7 +339,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
                           DateTime.now().day < pickedDate.day)) {
                     age--;
                   }
-                  _isDobValid = age >= 15; //utilisateur minimum 15 ans
+                  _isDobValid = age >= 13; //utilisateur minimum 13 ans
                 });
               }
             },
@@ -373,7 +373,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
           Padding(
             padding: const EdgeInsets.only(top: 5, left: 5),
             child: Text(
-              _isDobValid ? '' : 'Vous devez avoir au moins 15 ans',
+              _isDobValid ? '' : 'Vous devez avoir au moins 13 ans',
               style: const TextStyle(
                   fontSize: 12, fontFamily: 'Nunito', color: Colors.red),
             ),
