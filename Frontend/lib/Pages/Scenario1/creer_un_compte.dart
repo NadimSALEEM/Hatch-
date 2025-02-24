@@ -17,41 +17,56 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =TextEditingController();
 
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   final Dio _dio = Dio(); // Client HTTP
   final Logger _logger = Logger(); // Logger pour debug
 
-
   //Variables pour valider les différents champs de saisie
   bool _acceptTerms = false;
-  bool _isUsernameValid = false;
-  bool _isEmailValid = false;
-  bool _isPhoneValid = false;
-  bool _isDobValid = false; 
-  bool _isPasswordValid = false;
+  bool _isUsernameValid = true;
+  bool _isEmailValid = true;
+  bool _isPhoneValid = true;
+  bool _isDobValid = true;
+  bool _isPasswordValid = true;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   //Expressions régulières pour valider les variables
-  final RegExp _usernameRegExp = RegExp(r'^[a-zA-Z0-9_]{3,}$'); 
+  final RegExp _usernameRegExp = RegExp(r'^[a-zA-ZÀ-ÖØ-öø-ÿ0-9_]{3,}$');
   final RegExp _phoneRegExp = RegExp(r'^\d{10}$');
-  final RegExp _passwordRegExp = RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
+  final RegExp _passwordRegExp =
+      RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
 
   bool _loading = false; // Indicateur de chargement
-  String? _errorMessage; // Message d'erreur affiché à l'utilisateur
+
+  //vérification de la validité du formulaire, chaque champ doit être rempli correctement
+  bool _isFormValid() {
+    return _acceptTerms &&
+        _isUsernameValid &&
+        _isEmailValid &&
+        _isPhoneValid &&
+        _isDobValid &&
+        _isPasswordValid &&
+        _passwordController.text == _confirmPasswordController.text &&
+        _usernameController.text.isNotEmpty &&
+        _emailController.text.isNotEmpty &&
+        _phoneController.text.isNotEmpty &&
+        _dobController.text.isNotEmpty &&
+        _passwordController.text.isNotEmpty &&
+        _confirmPasswordController.text.isNotEmpty;
+  }
 
   Future<void> _register() async {
     setState(() {
       _loading = true;
-      _errorMessage = null;
     });
 
     // Correction du format de la date (JJ/MM/AAAA → AAAA-MM-JJ)
     String formattedDate = _dobController.text.trim();
     List<String> parts = formattedDate.split('/');
     if (parts.length == 3) {
-      formattedDate = "${parts[2]}-${parts[1]}-${parts[0]}"; // Transforme "01/02/2010" → "2010-02-01"
+      formattedDate = "${parts[2]}-${parts[1]}-${parts[0]}";
     }
 
     // Correction des noms des variables pour correspondre au backend
@@ -63,12 +78,13 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
       "date_naissance": formattedDate,
     };
 
-    _logger.i("Requête envoyée par Flutter: $requestData"); // Log des données envoyées
+    _logger.i(
+        "Requête envoyée par Flutter: $requestData"); // Log des données envoyées
 
     try {
       Response response = await _dio.post(
         'http://localhost:8080/auth/register',
-        options: Options(contentType: Headers.jsonContentType), 
+        options: Options(contentType: Headers.jsonContentType),
         data: requestData,
       );
 
@@ -84,29 +100,22 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
       _logger.e("Erreur API: ${e.response?.data}");
 
       if (e.response?.data.containsKey('message')) {
-        setState(() {
-          _errorMessage = e.response?.data['message'];
-        });
+        setState(() {});
       } else {
-        setState(() {
-          _errorMessage = 'Une erreur inconnue s\'est produite';
-        });
+        setState(() {});
       }
     } finally {
       setState(() {
         _loading = false;
       });
     }
-
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar( //Header 
+      appBar: AppBar(
+        //Header
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pushNamed(context, '/se_connecter'),
@@ -117,39 +126,41 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
         ),
         centerTitle: true,
         elevation: 0,
-        backgroundColor:
-            Colors.white, 
+        backgroundColor: Colors.white,
         bottom: const PreferredSize(
           preferredSize: Size.fromHeight(1),
           child: Divider(
-            color: Colors.black, 
+            color: Colors.black,
             thickness: 1,
             height: 1,
           ),
         ),
       ),
-      body: SingleChildScrollView(//possibilité de scroller l'écran
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildUsernameField(),
-            _buildEmailField(),
-            _buildPhoneField(),
-            _buildDobField(),
-            _buildPasswordField(),
-            _buildConfirmPasswordField(),
-            _buildTermsCheckbox(),
-            const SizedBox(height: 20),
-            _buildSignupButton(),
-            const SizedBox(height: 20)
-          ],
+      body: AbsorbPointer( //pas d'interactions possibles pendant le chargement
+        absorbing: _loading,
+        child: SingleChildScrollView( //possibilité de scroller l'écran 
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _buildUsernameField(),
+              _buildEmailField(),
+              _buildPhoneField(),
+              _buildDobField(),
+              _buildPasswordField(),
+              _buildConfirmPasswordField(),
+              _buildTermsCheckbox(),
+              const SizedBox(height: 20),
+              _buildSignupButton(),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  //Saisie du nom d'utilisateur 
+  //Saisie du nom d'utilisateur
   Widget _buildUsernameField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -167,8 +178,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: Colors.white,
-              border:
-                  Border.all(color: const Color(0xFFEDEDED)),
+              border: Border.all(color: const Color(0xFFEDEDED)),
               borderRadius: BorderRadius.circular(8),
             ),
             child: TextField(
@@ -182,6 +192,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
               onChanged: (value) {
                 setState(() {
                   _isUsernameValid = _usernameRegExp.hasMatch(value);
+                  _isFormValid();
                 });
               },
             ),
@@ -234,7 +245,9 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _isEmailValid = EmailValidator.validate(value); //vérification et validation 
+                  _isEmailValid = EmailValidator.validate(
+                      value); //vérification et validation
+                  _isFormValid();
                 });
               },
             ),
@@ -286,6 +299,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
               onChanged: (value) {
                 setState(() {
                   _isPhoneValid = _phoneRegExp.hasMatch(value);
+                  _isFormValid();
                 });
               },
             ),
@@ -323,9 +337,10 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
             onTap: () async {
               DateTime? pickedDate = await showDatePicker(
                 context: context,
-                initialDate: DateTime.now().subtract(const Duration(days: 365 * 13)), // Par défaut 15 ans en arrière
+                initialDate: DateTime.now().subtract(const Duration(
+                    days: 365 * 13)), // Par défaut 15 ans en arrière
                 firstDate: DateTime(1900),
-                lastDate: DateTime.now(), 
+                lastDate: DateTime.now(),
               );
               //Vérification de la date de naissance
               if (pickedDate != null) {
@@ -340,6 +355,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
                     age--;
                   }
                   _isDobValid = age >= 13; //utilisateur minimum 13 ans
+                  _isFormValid();
                 });
               }
             },
@@ -383,7 +399,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
     );
   }
 
-  //Saisie mot de passe 
+  //Saisie mot de passe
   Widget _buildPasswordField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -412,7 +428,8 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
               decoration: InputDecoration(
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                suffixIcon: IconButton( //icône visibilité mot de passe 
+                suffixIcon: IconButton(
+                  //icône visibilité mot de passe
                   icon: Icon(
                       _isPasswordVisible
                           ? Icons.visibility
@@ -427,7 +444,9 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _isPasswordValid = _passwordRegExp.hasMatch(value); //vérification format mot de passe
+                  _isPasswordValid = _passwordRegExp
+                      .hasMatch(value); //vérification format mot de passe
+                  _isFormValid();
                 });
               },
             ),
@@ -448,7 +467,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
     );
   }
 
-  //Saisie confirmation du mot de passe 
+  //Saisie confirmation du mot de passe
   Widget _buildConfirmPasswordField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -478,20 +497,24 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 suffixIcon: IconButton(
-                  icon: Icon( //icône affichage du mot de passe
+                  icon: Icon(
+                      //icône affichage du mot de passe
                       _isConfirmPasswordVisible
                           ? Icons.visibility
                           : Icons.visibility_off,
                       color: Colors.grey),
                   onPressed: () {
                     setState(() {
-                      _isConfirmPasswordVisible = !_isConfirmPasswordVisible; //rendre le mot de passe visible
+                      _isConfirmPasswordVisible =
+                          !_isConfirmPasswordVisible; //rendre le mot de passe visible
                     });
                   },
                 ),
               ),
               onChanged: (value) {
-                setState(() {}); // Rafraîchir pour la validation en temps réel
+                setState(() {
+                  _isFormValid();
+                }); // Rafraîchir pour la validation en temps réel
               },
             ),
           ),
@@ -534,12 +557,14 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
     );
   }
 
-    // Bouton inscription
+  // Bouton inscription
   Widget _buildSignupButton() {
     return ElevatedButton(
-      onPressed: (_acceptTerms && _isEmailValid && !_loading)  // ✅ Ajoute !_loading pour éviter double clic
-          ? _register // ✅ Appelle la fonction d'inscription
-          : null,
+      onPressed:
+          (_isFormValid() && //bouton cliquable uniquement si le formulaire est rempli correctement
+                  !_loading) //pour éviter double clic
+              ? _register //fonction d'inscription
+              : null,
       style: ElevatedButton.styleFrom(
           padding: EdgeInsets.zero, backgroundColor: Colors.transparent),
       child: Ink(
@@ -555,7 +580,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 130),
           child: _loading
-              ? const CircularProgressIndicator(color: Colors.white) // ✅ Ajout d'un loader
+              ? const CircularProgressIndicator(color: Colors.white)
               : const Text('Inscription',
                   style: TextStyle(
                       fontSize: 15, fontFamily: 'Nunito', color: Colors.white)),
@@ -563,5 +588,4 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
       ),
     );
   }
-
 }

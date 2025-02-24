@@ -23,13 +23,24 @@ class _SeConnecterState extends State<SeConnecter> {
   final Dio _dio = Dio(); //objet pour envoyer des requêtes HTTP
   final Logger _logger = Logger();
 
+  //Variables d'état
   bool _loading = false; //true si la connexion est en cours
   bool _rememberMe =
       false; //true si l'utilisateur veut mémoriser ses identifiants
   String? _errorMessage; //message d'erreur en cas d'échec de connexion
-  bool _isEmailValid = false;
-  bool _isPasswordValid = false;
+  bool _isEmailValid = true; //verification du format du mail
   bool _obscurePassword = true; //mot de passe masqué
+  bool _isButtonEnabled =
+      false; //bouton connexion cliquable uniquement si tous les champs sont remplis
+
+  //Fonction pour mettre à jour l'état du bouton connexion (vérification de la validité du format du mail et que les champs ne sont pas vides)
+  void _updateButtonState() {
+    setState(() {
+      _isButtonEnabled = _emailController.text.isNotEmpty &&
+          _passwordController.text.isNotEmpty &&
+          _isEmailValid;
+    });
+  }
 
   //Fonction pour mettre à jour l'UI en activant l'état de chargement
   Future<void> _login() async {
@@ -195,16 +206,14 @@ class _SeConnecterState extends State<SeConnecter> {
                         ? const CircularProgressIndicator() //indicateur de chargement
                         : ElevatedButton(
                             onPressed:
-                                (_isEmailValid && _isPasswordValid && !_loading)
-                                    ? _login
-                                    : null,
+                                (_isButtonEnabled && !_loading) ? _login : null,
                             style: ElevatedButton.styleFrom(
                               padding: EdgeInsets.zero,
                               backgroundColor: Colors.transparent,
                             ),
                             child: Ink(
                               decoration: BoxDecoration(
-                                gradient: (_isEmailValid && _isPasswordValid)
+                                gradient: (_isButtonEnabled)
                                     ? const LinearGradient(
                                         colors: [
                                           Color(0xFFB9ADFF),
@@ -311,14 +320,15 @@ class _SeConnecterState extends State<SeConnecter> {
               decoration: InputDecoration(
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                errorText:
-                    _isEmailValid ? null : 'Email invalide', // Message d'erreur
+                errorText: _isEmailValid
+                    ? null
+                    : 'Format email invalide', // Message d'erreur
               ),
               onChanged: (value) {
                 setState(() {
-                  _isEmailValid = EmailValidator.validate(
-                      value); //vérification du format du mail
+                  _isEmailValid = EmailValidator.validate(value);
                 });
+                _updateButtonState();
               },
             ),
           ),
@@ -368,7 +378,7 @@ class _SeConnecterState extends State<SeConnecter> {
               decoration: InputDecoration(
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                suffixIcon: IconButton( //icône oeil pour voir le mot de passe
+                suffixIcon: IconButton(
                   icon: Icon(
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
                     color: Colors.grey,
@@ -379,14 +389,9 @@ class _SeConnecterState extends State<SeConnecter> {
                     });
                   },
                 ),
-                errorText: _isPasswordValid
-                    ? null
-                    : 'Entrez au minimum 8 caractères', // Message d'erreur
               ),
               onChanged: (value) {
-                setState(() {
-                  _isPasswordValid = value.length >= 8;
-                });
+                _updateButtonState();
               },
             ),
           ),
