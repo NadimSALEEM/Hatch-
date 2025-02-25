@@ -17,7 +17,8 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   final Dio _dio = Dio(); // Client HTTP
@@ -94,7 +95,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Inscription réussie !')),
         );
-        Navigator.pushNamed(context, '/home');
+        _showCoachSelectionPopup(); // Affichage popup choix du coach
       }
     } on DioError catch (e) {
       _logger.e("Erreur API: ${e.response?.data}");
@@ -109,6 +110,98 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
         _loading = false;
       });
     }
+  }
+
+  //Pop-up choix du coach
+  void _showCoachSelectionPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            side: BorderSide(color: Color(0xFF9381FF), width: 2),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                //Icon coach
+                'images/coach_popup.png',
+                height: 80,
+              ),
+              SizedBox(height: 5),
+              Text(
+                "Voulez-vous choisir votre coach?",
+                style: TextStyle(
+                    fontFamily: 'NunitoBold',
+                    fontSize: 18,
+                    color: Color(0xFF2F2F2F)),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10),
+              Text(
+                "Répondez à un court questionnaire afin de personnaliser votre coach!",
+                style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 14,
+                    color: Color(0xFF2F2F2F)),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.pushNamed(context, '/questionnaire');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    backgroundColor: Color(0xFF9381FF),
+                    minimumSize: Size(double.infinity, 50),
+                  ),
+                  child: Text(
+                    'Choisir mon coach',
+                    style: TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 14,
+                        color: Colors.white),
+                  ),
+                ),
+              ),
+              SizedBox(height: 13),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.pushNamed(context, '/accueil');
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    side: BorderSide(color: Colors.black.withAlpha(128)),
+                    backgroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 50),
+                  ),
+                  child: Text(
+                    'Plus tard',
+                    style: TextStyle(
+                        fontFamily: 'NunitoBold',
+                        fontSize: 14,
+                        color: Color(0xFF2F2F2F)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -136,9 +229,11 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
           ),
         ),
       ),
-      body: AbsorbPointer( //pas d'interactions possibles pendant le chargement
+      body: AbsorbPointer(
+        //pas d'interactions possibles pendant le chargement
         absorbing: _loading,
-        child: SingleChildScrollView( //possibilité de scroller l'écran 
+        child: SingleChildScrollView(
+          //possibilité de scroller l'écran
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,

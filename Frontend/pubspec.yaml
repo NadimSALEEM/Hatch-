@@ -25,6 +25,7 @@ flutter:
     - assets/images/white_logo.png
     - assets/images/dragons_welcome.png
     - assets/images/color_logo.png
+    - assets/images/coach_popup.png
   fonts:
     - family: BricolageGrotesqueBold
       fonts:
@@ -35,3 +36,6 @@ flutter:
     - family: Nunito
       fonts:
         - asset: assets/fonts/Nunito-SemiBold.ttf
+    - family: NunitoBold
+      fonts:
+        - asset: assets/fonts/Nunito-ExtraBold.ttf
