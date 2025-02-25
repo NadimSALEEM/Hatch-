@@ -50,6 +50,9 @@ class MiseAJourUtilisateur(BaseModel):
     biographie: Optional[str] = None
     coach_assigne: Optional[int] = None
 
+class MiseAJourMotDePasse(BaseModel):
+    mot_de_passe_hache: str
+
 class LireUtilisateur(BaseModel):
     id: int
     nom_utilisateur: str
