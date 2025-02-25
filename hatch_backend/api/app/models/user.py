@@ -51,6 +51,8 @@ class MiseAJourUtilisateur(BaseModel):
     coach_assigne: Optional[int] = None
 
 class MiseAJourMotDePasse(BaseModel):
+    nom_utilisateur: Optional[str] = None
+    email: Optional[str] = None
     mot_de_passe_hache: str
 
 class LireUtilisateur(BaseModel):

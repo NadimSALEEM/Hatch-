@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.user import Utilisateur
-from app.models.user import CreerUtilisateur, MiseAJourUtilisateur, LireUtilisateur
+from app.models.user import CreerUtilisateur, MiseAJourUtilisateur, LireUtilisateur, MiseAJourMotDePasse
 from app.routers.auth import get_current_user
 from app.internal.auth_utils import hash_password
 
@@ -63,13 +63,13 @@ def mettre_a_jour_profil(update_data: MiseAJourUtilisateur, utilisateur: dict = 
 
 
 @router.put("/me/change_pw")
-def mettre_a_jour_mdp(update_data: MiseAJourUtilisateur, utilisateur: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+def mettre_a_jour_mdp(update_data: MiseAJourMotDePasse, utilisateur: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Met à jour le mot de passe de l'utilisateur.
     """
     utilisateur_db = db.query(Utilisateur).filter(Utilisateur.email == utilisateur["email"]).first()
-    if not utilisateur_db:
-        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    #if not utilisateur_db:
+    #    raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
     if update_data.mot_de_passe_hache:
         utilisateur_db.mot_de_passe_hache = hash_password(update_data.mot_de_passe_hache)        
