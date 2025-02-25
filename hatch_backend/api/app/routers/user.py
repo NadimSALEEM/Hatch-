@@ -68,8 +68,8 @@ def mettre_a_jour_mdp(update_data: MiseAJourMotDePasse, utilisateur: dict = Depe
     Met à jour le mot de passe de l'utilisateur.
     """
     utilisateur_db = db.query(Utilisateur).filter(Utilisateur.email == utilisateur["email"]).first()
-    #if not utilisateur_db:
-    #    raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    if not utilisateur_db:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
     if update_data.mot_de_passe_hache:
         utilisateur_db.mot_de_passe_hache = hash_password(update_data.mot_de_passe_hache)        
