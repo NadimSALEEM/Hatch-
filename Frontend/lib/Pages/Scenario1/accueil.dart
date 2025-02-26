@@ -170,64 +170,75 @@ class _AccueilState extends State<Accueil> {
                 ? Icon(Icons.pause_circle_filled, color: Colors.grey, size: 28)
                 : Icon(Icons.check_circle, color: Color(0xFFAB96FF), size: 28);
 
-        return Card(
-          elevation: 4,
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-          color: cardColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          shadowColor: Colors.grey.shade300,
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
-                      children: [
-                        statusIcon,
-                        SizedBox(width: 12),
-                        Text(
-                          'Habitude ${index + 1}',
-                          style: TextStyle(
-                            color: status == 'En pause'
-                                ? Colors.black
-                                : Color(0xFFAB96FF),
-                            fontWeight: titleWeight,
-                            fontSize: 16,
+        return GestureDetector(
+          onTap: () {
+            // Naviguer vers la page habitude avec l'index en paramètre
+            Navigator.pushNamed(
+              context, 
+              '/habitude',
+              arguments: {'habitIndex': index + 1}, // Envoyer l'index à la page suivante
+            );
+          },
+          child: Card(
+            elevation: 4,
+            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+            color: cardColor,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shadowColor: Colors.grey.shade300,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          statusIcon,
+                          SizedBox(width: 12),
+                          Text(
+                            'Habitude ${index + 1}',
+                            style: TextStyle(
+                              color: status == 'En pause'
+                                  ? Colors.black
+                                  : Color(0xFFAB96FF),
+                              fontWeight: titleWeight,
+                              fontSize: 16,
+                            ),
                           ),
+                        ],
+                      ),
+                      Text(
+                        status,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.w500,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                  if (status == 'En cours') ...[
+                    SizedBox(height: 6),
                     Text(
-                      status,
+                      '${(index + 1) * 5} jours enchaînés',
                       style: TextStyle(
-                        color: statusColor,
-                        fontWeight: FontWeight.w500,
+                        color: Colors.orange,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
                       ),
                     ),
                   ],
-                ),
-                if (status == 'En cours') ...[
-                  SizedBox(height: 6),
-                  Text(
-                    '${(index + 1) * 5} jours enchaînés',
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                    ),
-                  ),
                 ],
-              ],
+              ),
             ),
           ),
         );
       },
     );
   }
+
 
   Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
