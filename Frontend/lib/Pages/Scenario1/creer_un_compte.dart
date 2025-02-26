@@ -207,53 +207,61 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFF8F2FF), // Même couleur de fond que l'accueil
+      resizeToAvoidBottomInset: false, // Empêche le redimensionnement quand le clavier apparaît
       appBar: AppBar(
-        //Header
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(context, '/se_connecter'),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF2F2F2F)),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
           'Inscription',
-          style: TextStyle(fontFamily: 'BricolageGrotesqueBold', fontSize: 18),
+          style: TextStyle(
+            fontSize: 20,
+            fontFamily: 'NunitoBold',
+            color: Color(0xFF2F2F2F),
+          ),
         ),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.white,
         bottom: const PreferredSize(
           preferredSize: Size.fromHeight(1),
           child: Divider(
-            color: Colors.black,
+            color: Color(0xFFE0E0E0),
             thickness: 1,
             height: 1,
           ),
         ),
       ),
-      body: AbsorbPointer(
-        //pas d'interactions possibles pendant le chargement
-        absorbing: _loading,
-        child: SingleChildScrollView(
-          //possibilité de scroller l'écran
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _buildUsernameField(),
-              _buildEmailField(),
-              _buildPhoneField(),
-              _buildDobField(),
-              _buildPasswordField(),
-              _buildConfirmPasswordField(),
-              _buildTermsCheckbox(),
-              const SizedBox(height: 20),
-              _buildSignupButton(),
-              const SizedBox(height: 20),
-            ],
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildUsernameField(),
+                  _buildEmailField(),
+                  _buildPhoneField(),
+                  _buildDobField(),
+                  _buildPasswordField(),
+                  _buildConfirmPasswordField(),
+                  _buildTermsCheckbox(),
+                  const SizedBox(height: 20),
+                  _buildSignupButton(),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
+
+
 
   //Saisie du nom d'utilisateur
   Widget _buildUsernameField() {

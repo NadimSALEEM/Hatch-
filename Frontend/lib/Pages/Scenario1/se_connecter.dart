@@ -2,10 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart'; //requêtes HTTP
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; //stockage sécurisé des données
-import 'package:hatch/Pages/Scenario1/creer_un_compte.dart';
 import 'package:logger/logger.dart';
-import 'package:hatch/Pages/Scenario1/Reinit_mot_de_passe.dart';
 import 'package:email_validator/email_validator.dart'; //validation du format des emails
+
+import 'package:hatch/Pages/Scenario1/creer_un_compte.dart';
+import 'package:hatch/Pages/Scenario1/Reinit_mot_de_passe.dart';
+import 'package:hatch/Pages/Scenario1/accueil.dart';
+
 
 class SeConnecter extends StatefulWidget {
   const SeConnecter({Key? key}) : super(key: key);
@@ -70,7 +73,7 @@ class _SeConnecterState extends State<SeConnecter> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Connexion réussie !')),
           );
-          Navigator.pushNamed(context, '/home');
+          Navigator.pushNamed(context, '/accueil');
         }
       }
       //Gestion des erreurs

@@ -23,8 +23,7 @@ class MainApp extends StatelessWidget {
         '/parametres_compte': (context) =>  ParametresCompte(),
         '/profil': (context) =>  Profil(),
         '/questionnaire': (context) =>  Questionnaire(),
-        '/init_nouveau_mot_de_passe': (context) =>
-            const InitNouveauMotDePasse(),
+        '/init_nouveau_mot_de_passe': (context) => InitNouveauMotDePasse(),
         '/creer_objectif': (context) =>  CreerObjectif(),
         '/creer_une_habitude': (context) =>  CreerHabitude(),
         '/habitude': (context) =>  Habitude(),

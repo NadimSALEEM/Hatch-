@@ -6,15 +6,15 @@ meta {
 
 get {
   url: http://localhost:8080/users/me
-  body: formUrlEncoded
+  body: none
   auth: none
 }
 
 headers {
-  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzQwMTQzNDYzfQ.xuN7zP8im1ogpmESi_JEUL2qDTUoVHAQgEt2xPPVu_c
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJuYWRAbmFkLm5hZCIsImV4cCI6MTc0MDUyOTIxNn0.vBa7oOvTadMV1GsY-M7FKjZitTjj9tqwML2poPvjC3o
 }
 
 body:form-urlencoded {
-  username: test@example.com
-  password: password123
+  ~username: test@example.com
+  ~password: password123
 }
