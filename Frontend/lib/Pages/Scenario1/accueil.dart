@@ -240,16 +240,27 @@ class _AccueilState extends State<Accueil> {
   }
 
 
+  //  Barre de navigation en bas (Correction incluse)
   Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
       onTap: (index) {
+        // Vérifie si on est déjà sur la page sélectionnée
+        if (_selectedIndex == index) return;
+
         setState(() {
           _selectedIndex = index;
         });
+
+        // Navigation uniquement pour Accueil et Coach pour l'instant
+        if (index == 0) {
+          Navigator.pushReplacementNamed(context, '/accueil');
+        } else if (index == 1) {
+          Navigator.pushReplacementNamed(context, '/coach');
+        }
       },
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: Color(0xFFAB96FF),
+      selectedItemColor: const Color(0xFFAB96FF),
       unselectedItemColor: Colors.grey,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Accueil'),
@@ -261,6 +272,7 @@ class _AccueilState extends State<Accueil> {
     );
   }
 
+
   BoxDecoration _boxDecoration() {
     return BoxDecoration(
       color: Colors.white,
@@ -268,4 +280,5 @@ class _AccueilState extends State<Accueil> {
       boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3))],
     );
   }
+
 }
