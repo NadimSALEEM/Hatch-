@@ -70,7 +70,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
       formattedDate = "${parts[2]}-${parts[1]}-${parts[0]}";
     }
 
-    // Correction des noms des variables pour correspondre au backend
+    // Préparation des données à envoyer au backend
     Map<String, dynamic> requestData = {
       "nom_utilisateur": _usernameController.text.trim(),
       "email": _emailController.text.trim(),
@@ -79,8 +79,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
       "date_naissance": formattedDate,
     };
 
-    _logger.i(
-        "Requête envoyée par Flutter: $requestData"); // Log des données envoyées
+    _logger.i("Requête envoyée par Flutter: $requestData"); // Log des données envoyées
 
     try {
       Response response = await _dio.post(
@@ -91,26 +90,45 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
 
       _logger.i("Réponse API: ${response.data}");
 
-      if (response.data.containsKey('message')) {
+      if (response.data.containsKey('access_token')) {
+        // Stocker le token après l'inscription
+        String token = response.data['access_token'];
+        await _storage.write(key: 'jwt_token', value: token);
+        _logger.i("Token enregistré : $token");
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Inscription réussie !')),
         );
-        _showCoachSelectionPopup(); // Affichage popup choix du coach
+
+        // Redirection vers l'accueil après inscription
+        if (mounted) {
+          _showCoachSelectionPopup(); 
+        }
+      } else {
+        _logger.e("Erreur: Aucun token reçu après l'inscription.");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Erreur: Aucun token reçu.")),
+        );
       }
     } on DioError catch (e) {
       _logger.e("Erreur API: ${e.response?.data}");
 
-      if (e.response?.data.containsKey('message')) {
-        setState(() {});
-      } else {
-        setState(() {});
+      String errorMessage = "Une erreur est survenue. Veuillez réessayer.";
+
+      if (e.response != null && e.response!.data.containsKey('message')) {
+        errorMessage = e.response!.data['message'];
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
     } finally {
       setState(() {
         _loading = false;
       });
     }
   }
+
 
   //Pop-up choix du coach
   void _showCoachSelectionPopup() {

@@ -44,7 +44,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 @router.post("/register")
 def register_user(user: CreerUtilisateur, db: Session = Depends(get_db)):
-    """Inscription d'un nouvel utilisateur avec mot de passe hashé."""
+    """Inscription d'un nouvel utilisateur avec génération d'un JWT token."""
 
     # Vérifier si l'email ou le téléphone existent déjà
     existing_user = db.query(Utilisateur).filter(
@@ -74,7 +74,11 @@ def register_user(user: CreerUtilisateur, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
+    access_token = create_access_token(data={"sub": new_user.email})
+
     return {
         "message": "Utilisateur créé avec succès",
-        "user_id": new_user.id
+        "user_id": new_user.id,
+        "access_token": access_token,
+        "token_type": "bearer"
     }
