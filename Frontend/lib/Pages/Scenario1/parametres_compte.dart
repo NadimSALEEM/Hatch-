@@ -80,7 +80,11 @@ class _ParametresCompteState extends State<ParametresCompte> {
       padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
         onTap: () {
-          print("$title sélectionné");
+          
+        if (title == "Profil") {
+          Navigator.pushNamed(context, '/profil'); 
+        }
+
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),

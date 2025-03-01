@@ -27,6 +27,7 @@ flutter:
     - assets/images/dragons_welcome.png
     - assets/images/color_logo.png
     - assets/images/coach_popup.png
+    - assets/images/corbeille_suppression.png
   fonts:
     - family: BricolageGrotesqueBold
       fonts:
