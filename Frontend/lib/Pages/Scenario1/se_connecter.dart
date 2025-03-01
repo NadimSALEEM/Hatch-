@@ -7,7 +7,6 @@ import 'package:email_validator/email_validator.dart'; //validation du format de
 
 import 'package:hatch/Pages/Scenario1/creer_un_compte.dart';
 import 'package:hatch/Pages/Scenario1/Reinit_mot_de_passe.dart';
-import 'package:hatch/Pages/Scenario1/accueil.dart';
 
 
 class SeConnecter extends StatefulWidget {
@@ -49,7 +48,7 @@ class _SeConnecterState extends State<SeConnecter> {
   Future<void> _login() async {
     setState(() {
       _loading = true;
-      _errorMessage = null; //réinitialisation du message d'erreur
+      _errorMessage = null;
     });
 
     //Envoi de la requête HTTP

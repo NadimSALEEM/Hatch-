@@ -1,11 +1,11 @@
 meta {
-  name: Logout
+  name: If authenticated
   type: http
-  seq: 5
+  seq: 3
 }
 
-post {
-  url: http://localhost:8080/auth/logout
+get {
+  url: http://localhost:8080/auth/me
   body: none
   auth: none
 }

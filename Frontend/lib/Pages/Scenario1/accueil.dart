@@ -10,10 +10,13 @@ class Accueil extends StatefulWidget {
 }
 
 class _AccueilState extends State<Accueil> {
+  
+  // Nom d'utilisateur par défaut
   String username = "Utilisateur";
   final Dio _dio = Dio();
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
+  // Index de la page actuelle pour le bas de navigation
   int _selectedIndex = 0;
 
   @override
@@ -22,6 +25,7 @@ class _AccueilState extends State<Accueil> {
     fetchUsername();
   }
 
+  // Récupérer le nom d'utilisateur
   Future<void> fetchUsername() async {
     try {
       String? token = await _secureStorage.read(key: "jwt_token");
@@ -66,6 +70,7 @@ class _AccueilState extends State<Accueil> {
     );
   }
 
+  // Barre d'application
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -99,6 +104,7 @@ class _AccueilState extends State<Accueil> {
     );
   }
 
+  // Conteneur de l'image
   Widget _buildImageContainer() {
     return Container(
       height: MediaQuery.of(context).size.height * 0.3,
@@ -114,6 +120,7 @@ class _AccueilState extends State<Accueil> {
     );
   }
 
+  // Conteneur des habitudes
   Widget _buildHabitsContainer() {
     return Container(
       width: double.infinity,
@@ -146,6 +153,7 @@ class _AccueilState extends State<Accueil> {
     );
   }
 
+  // Liste des habitudes
   Widget _buildHabitList() {
     return ListView.builder(
       itemCount: 10,
@@ -240,7 +248,7 @@ class _AccueilState extends State<Accueil> {
   }
 
 
-  //  Barre de navigation en bas (Correction incluse)
+  //  Barre de navigation en bas
   Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
@@ -273,6 +281,7 @@ class _AccueilState extends State<Accueil> {
   }
 
 
+  // Décoration de la boîte
   BoxDecoration _boxDecoration() {
     return BoxDecoration(
       color: Colors.white,

@@ -10,7 +10,7 @@ export 'package:hatch/Pages/Scenario1/profil.dart';
 export 'package:hatch/Pages/Scenario1/questionnaire.dart';
 export 'package:hatch/Pages/Scenario1/init_nouveau_mot_de_passe.dart';
 
-// Scenario 2 (Fixing Duplicate Exports)
+// Scenario 2
 export 'package:hatch/Pages/Scenario2/creer_objectif.dart';
 export 'package:hatch/Pages/Scenario2/creer_habitude.dart';
 export 'package:hatch/Pages/Scenario2/habitude.dart';

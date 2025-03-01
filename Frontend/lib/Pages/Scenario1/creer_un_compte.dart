@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart'; // Requêtes HTTP
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Stockage sécurisé
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
 import 'package:email_validator/email_validator.dart';
 
@@ -58,19 +58,18 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
         _confirmPasswordController.text.isNotEmpty;
   }
 
+  //Fonction d'inscription
   Future<void> _register() async {
     setState(() {
       _loading = true;
     });
 
-    // Correction du format de la date (JJ/MM/AAAA → AAAA-MM-JJ)
     String formattedDate = _dobController.text.trim();
     List<String> parts = formattedDate.split('/');
     if (parts.length == 3) {
       formattedDate = "${parts[2]}-${parts[1]}-${parts[0]}";
     }
 
-    // Préparation des données à envoyer au backend
     Map<String, dynamic> requestData = {
       "nom_utilisateur": _usernameController.text.trim(),
       "email": _emailController.text.trim(),
@@ -79,7 +78,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
       "date_naissance": formattedDate,
     };
 
-    _logger.i("Requête envoyée par Flutter: $requestData"); // Log des données envoyées
+    _logger.i("Requête envoyée: $requestData");
 
     try {
       Response response = await _dio.post(
@@ -90,33 +89,51 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
 
       _logger.i("Réponse API: ${response.data}");
 
-      if (response.data.containsKey('access_token')) {
-        // Stocker le token après l'inscription
-        String token = response.data['access_token'];
-        await _storage.write(key: 'jwt_token', value: token);
-        _logger.i("Token enregistré : $token");
+      // Vérifier si response.data est bien un Map
+      if (response.data is Map<String, dynamic>) {
+        final Map<String, dynamic> responseData = response.data;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Inscription réussie !')),
-        );
+        if (responseData.containsKey('access_token')) {
+          String accessToken = responseData['access_token'];
+          String? refreshToken = responseData.containsKey('refresh_token') ? responseData['refresh_token'] : null;
 
-        // Redirection vers l'accueil après inscription
-        if (mounted) {
-          _showCoachSelectionPopup(); 
+          await _storage.write(key: 'jwt_token', value: accessToken);
+          if (refreshToken != null) {
+            await _storage.write(key: 'refresh_token', value: refreshToken);
+          }
+
+          _logger.i("Tokens enregistrés: Access=$accessToken, Refresh=$refreshToken");
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Inscription réussie !')),
+          );
+
+          if (mounted) {
+            _showCoachSelectionPopup();
+          }
+        } else {
+          _logger.e("Erreur: La clé 'access_token' est absente.");
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Erreur: Aucun access_token reçu.")),
+          );
         }
       } else {
-        _logger.e("Erreur: Aucun token reçu après l'inscription.");
+        _logger.e("Erreur: Format inattendu de la réponse.");
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Erreur: Aucun token reçu.")),
+          const SnackBar(content: Text("Erreur: Réponse inattendue du serveur.")),
         );
       }
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       _logger.e("Erreur API: ${e.response?.data}");
 
       String errorMessage = "Une erreur est survenue. Veuillez réessayer.";
 
-      if (e.response != null && e.response!.data.containsKey('message')) {
+      if (e.response != null && e.response!.data is Map && e.response!.data.containsKey('message')) {
         errorMessage = e.response!.data['message'];
+      } else if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout) {
+        errorMessage = "Le serveur ne répond pas. Vérifiez votre connexion internet.";
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage = "Impossible de se connecter au serveur.";
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -128,6 +145,7 @@ class _CreerUnCompteState extends State<CreerUnCompte> {
       });
     }
   }
+
 
 
   //Pop-up choix du coach

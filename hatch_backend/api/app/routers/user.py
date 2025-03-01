@@ -91,12 +91,3 @@ def supprimer_profil(utilisateur: dict = Depends(get_current_user), db: Session 
     db.delete(utilisateur_db)
     db.commit()
     return {"message": "Compte utilisateur supprimé avec succès"}
-
-@router.post("/me/logout")
-def deconnexion(utilisateur: dict = Depends(get_current_user)):
-    """
-    Déconnecte l'utilisateur en supprimant son token côté client.
-    """
-    return {"message": "Déconnexion réussie, supprimez le token côté client"}
-
-
