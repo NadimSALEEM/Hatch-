@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-class ReinitMotDePasse extends StatelessWidget {
-  const ReinitMotDePasse({Key? key}) : super(key: key);
+class CodeVerification extends StatelessWidget {
+  const CodeVerification({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController emailController = TextEditingController();
+    final TextEditingController codeController = TextEditingController();
+    final String email = ModalRoute.of(context)!.settings.arguments as String;
 
     return Scaffold(
       body: Padding(
@@ -23,12 +24,12 @@ class ReinitMotDePasse extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Instructions
-            const Center(
+            Center(
               child: SizedBox(
                 width: 300,
                 child: Text(
-                  'Pour réinitialiser votre mot de passe, veuillez saisir votre adresse email. Nous vous enverrons un code de vérification.',
-                  style: TextStyle(
+                  'Un code de vérification a été envoyé à $email. Veuillez le saisir ci-dessous.',
+                  style: const TextStyle(
                     fontFamily: 'Nunito',
                     fontSize: 14,
                     color: Color(0xFF666666),
@@ -40,7 +41,7 @@ class ReinitMotDePasse extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            // Champ de saisie pour l'email
+            // Champ de saisie pour le code
             Center(
               child: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.85,
@@ -48,7 +49,7 @@ class ReinitMotDePasse extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Email',
+                      'Code de vérification',
                       style: TextStyle(
                         fontFamily: 'Nunito',
                         fontSize: 16,
@@ -65,13 +66,12 @@ class ReinitMotDePasse extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: TextField(
-                        controller: emailController,
+                        controller: codeController,
                         style: const TextStyle(
                           fontFamily: 'Nunito',
                           fontSize: 16,
                           color: Color(0xFF666666),
                         ),
-                        keyboardType: TextInputType.emailAddress,
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(vertical: 10),
@@ -84,19 +84,19 @@ class ReinitMotDePasse extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            // Bouton pour continuer
+            // Bouton pour vérifier le code
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  if (emailController.text.isNotEmpty) {
+                  if (codeController.text.isNotEmpty) {
                     Navigator.pushNamed(
                       context,
-                      '/code_verification',
-                      arguments: emailController.text,
+                      '/init_nouveau_mot_de_passe',
+                      arguments: email,
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Veuillez entrer un email valide')),
+                      const SnackBar(content: Text('Veuillez entrer un code valide')),
                     );
                   }
                 },
@@ -116,7 +116,7 @@ class ReinitMotDePasse extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 130),
                     child: const Text(
-                      'Continuer',
+                      'Vérifier',
                       style: TextStyle(
                         fontSize: 15,
                         fontFamily: 'Nunito',

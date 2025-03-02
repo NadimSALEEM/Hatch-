@@ -22,6 +22,7 @@ class MainApp extends StatelessWidget {
         '/se_connecter': (context) => SeConnecter(),
         '/reinit_mot_de_passe': (context) => ReinitMotDePasse(),
         '/init_nouveau_mot_de_passe': (context) => InitNouveauMotDePasse(),
+        '/code_verification': (context) => CodeVerification(),
 
         '/accueil': (context) => AuthGuard(page: Accueil()),  // Pages protégées
         '/parametres_compte': (context) => AuthGuard(page: ParametresCompte()),

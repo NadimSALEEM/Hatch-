@@ -9,6 +9,7 @@ export 'package:hatch/Pages/Scenario1/parametres_compte.dart';
 export 'package:hatch/Pages/Scenario1/profil.dart';
 export 'package:hatch/Pages/Scenario1/questionnaire.dart';
 export 'package:hatch/Pages/Scenario1/init_nouveau_mot_de_passe.dart';
+export 'package:hatch/Pages/Scenario1/code_verification.dart';
 
 // Scenario 2
 export 'package:hatch/Pages/Scenario2/creer_objectif.dart';
