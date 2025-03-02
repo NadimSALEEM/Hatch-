@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 
 class InitNouveauMotDePasse extends StatefulWidget {
@@ -10,8 +12,62 @@ class InitNouveauMotDePasse extends StatefulWidget {
 class _InitNouveauMotDePasseState extends State<InitNouveauMotDePasse> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
-  bool _isPasswordValid = false; 
+  bool _isPasswordValid = false;
   bool _isFieldEmpty = true;
+
+  final Dio _dio = Dio();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  bool _loading = false; // Pour gérer le chargement
+
+  Future<void> _resetPassword() async {
+    setState(() {
+      _loading = true;
+    });
+
+    String? token = await _storage.read(key: 'jwt_token');
+    if (token == null) {
+      setState(() {
+        _loading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Utilisateur non authentifié.")),
+      );
+      return;
+    }
+
+
+    try {
+      Response response = await _dio.put(
+        'http://localhost:8080/users/me/change_pw',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'mot_de_passe_hache': _passwordController.text,
+        },
+      );
+
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Mot de passe mis à jour avec succès.")),
+        );
+        Navigator.pushReplacementNamed(context, '/profil');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Erreur lors de la mise à jour du mot de passe.")),
+      );
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
 
   // Vérification du format du mot de passe
   final RegExp _passwordRegExp =
@@ -63,47 +119,51 @@ class _InitNouveauMotDePasseState extends State<InitNouveauMotDePasse> {
 
             _buildPasswordField(),
 
-            const SizedBox(height: 20), 
+            const SizedBox(height: 20),
 
             // Bouton "Réinitialiser mot de passe"
             Center(
-              child: Ink(
-                decoration: BoxDecoration(
-                  gradient: (_isPasswordValid && !_isFieldEmpty)
-                      ? const LinearGradient(
-                          colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        )
-                      : null, 
-                  color: (_isPasswordValid && !_isFieldEmpty)
-                      ? null
-                      : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: InkWell(
-                  onTap: (_isPasswordValid && !_isFieldEmpty)
-                      ? () {
-                          Navigator.pushReplacementNamed(context, '/profil');
-                        }
-                      : null,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 40),
-                    child: Text(
-                      'Réinitialiser mot de passe',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontFamily: 'Nunito',
-                        color: (_isPasswordValid && !_isFieldEmpty)
-                            ? Colors.white
-                            : Colors.grey[500],
+              child: _loading
+                  ? const CircularProgressIndicator() // Affiche un loader si en cours de requête
+                  : ElevatedButton(
+                      onPressed:
+                          (_isPasswordValid && !_isFieldEmpty && !_loading)
+                              ? _resetPassword
+                              : null,
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        backgroundColor: Colors.transparent,
+                      ),
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          gradient: (_isPasswordValid && !_isFieldEmpty)
+                              ? const LinearGradient(
+                                  colors: [
+                                    Color(0xFFB9ADFF),
+                                    Color(0xFF9381FF)
+                                  ],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                )
+                              : null,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 40),
+                          child: Text(
+                            'Réinitialiser mot de passe',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'Nunito',
+                              color: (_isPasswordValid && !_isFieldEmpty)
+                                  ? Colors.white
+                                  : Colors.grey[500],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ),
             ),
           ],
         ),
@@ -126,7 +186,7 @@ class _InitNouveauMotDePasseState extends State<InitNouveauMotDePasse> {
               color: Color(0xFF666666),
             ),
           ),
-          const SizedBox(height: 8), 
+          const SizedBox(height: 8),
 
           Container(
             width: double.infinity,
@@ -150,7 +210,9 @@ class _InitNouveauMotDePasseState extends State<InitNouveauMotDePasse> {
                 suffixIcon: IconButton(
                   // Icône visibilité mot de passe
                   icon: Icon(
-                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                     color: Colors.grey,
                   ),
                   onPressed: () {
