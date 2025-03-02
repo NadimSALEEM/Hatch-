@@ -1,4 +1,3 @@
-//Importation des packages et bibliothèques nécessaires
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart'; //requêtes HTTP
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; //stockage sécurisé des données
@@ -8,7 +7,6 @@ import 'package:email_validator/email_validator.dart'; //validation du format de
 import 'package:hatch/Pages/Scenario1/creer_un_compte.dart';
 import 'package:hatch/Pages/Scenario1/Reinit_mot_de_passe.dart';
 
-
 class SeConnecter extends StatefulWidget {
   const SeConnecter({Key? key}) : super(key: key);
 
@@ -17,7 +15,7 @@ class SeConnecter extends StatefulWidget {
 }
 
 class _SeConnecterState extends State<SeConnecter> {
-  //Gestion des champs de saisie
+  // Gestion des champs de saisie
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -25,17 +23,53 @@ class _SeConnecterState extends State<SeConnecter> {
   final Dio _dio = Dio(); //objet pour envoyer des requêtes HTTP
   final Logger _logger = Logger();
 
-  //Variables d'état
+  // Variables d'état
   bool _loading = false; //true si la connexion est en cours
-  bool _rememberMe =
-      false; //true si l'utilisateur veut mémoriser ses identifiants
+  bool _rememberMe = false; //true si l'utilisateur veut mémoriser ses identifiants
   String? _errorMessage; //message d'erreur en cas d'échec de connexion
   bool _isEmailValid = true; //verification du format du mail
   bool _obscurePassword = true; //mot de passe masqué
-  bool _isButtonEnabled =
-      false; //bouton connexion cliquable uniquement si tous les champs sont remplis
+  bool _isButtonEnabled = false; //bouton connexion cliquable uniquement si tous les champs sont remplis
 
-  //Fonction pour mettre à jour l'état du bouton connexion (vérification de la validité du format du mail et que les champs ne sont pas vides)
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  // Méthode pour charger les identifiants sauvegardés
+  Future<void> _loadSavedCredentials() async {
+    Map<String, String?> credentials = await _getCredentials();
+    if (credentials['email'] != null && credentials['password'] != null) {
+      setState(() {
+        _emailController.text = credentials['email']!;
+        _passwordController.text = credentials['password']!;
+        _rememberMe = true; // Coche la case "Mémoriser mes identifiants"
+        _updateButtonState(); // Met à jour l'état du bouton de connexion
+      });
+    }
+  }
+
+  // Méthode pour enregistrer les identifiants
+  Future<void> _saveCredentials(String email, String password) async {
+    await _storage.write(key: 'saved_email', value: email);
+    await _storage.write(key: 'saved_password', value: password);
+  }
+
+  // Méthode pour récupérer les identifiants
+  Future<Map<String, String?>> _getCredentials() async {
+    String? email = await _storage.read(key: 'saved_email');
+    String? password = await _storage.read(key: 'saved_password');
+    return {'email': email, 'password': password};
+  }
+
+  // Méthode pour supprimer les identifiants
+  Future<void> _deleteCredentials() async {
+    await _storage.delete(key: 'saved_email');
+    await _storage.delete(key: 'saved_password');
+  }
+
+  // Fonction pour mettre à jour l'état du bouton connexion
   void _updateButtonState() {
     setState(() {
       _isButtonEnabled = _emailController.text.isNotEmpty &&
@@ -44,14 +78,13 @@ class _SeConnecterState extends State<SeConnecter> {
     });
   }
 
-  //Fonction pour mettre à jour l'UI en activant l'état de chargement
+  // Fonction pour gérer la connexion
   Future<void> _login() async {
     setState(() {
       _loading = true;
       _errorMessage = null;
     });
 
-    //Envoi de la requête HTTP
     try {
       Response response = await _dio.post(
         'http://localhost:8080/auth/token',
@@ -62,11 +95,17 @@ class _SeConnecterState extends State<SeConnecter> {
         },
       );
 
-      //Traitement de la réponse
       if (response.data.containsKey('access_token')) {
         String token = response.data['access_token'];
         await _storage.write(key: 'jwt_token', value: token);
         _logger.i("Login Success: Token -> $token");
+
+        // Mémoriser les identifiants si la case est cochée
+        if (_rememberMe) {
+          await _saveCredentials(_emailController.text.trim(), _passwordController.text);
+        } else {
+          await _deleteCredentials(); // Supprimer les identifiants si la case est décochée
+        }
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -75,7 +114,6 @@ class _SeConnecterState extends State<SeConnecter> {
           Navigator.pushNamed(context, '/accueil');
         }
       }
-      //Gestion des erreurs
     } catch (e) {
       if (e is DioException) {
         _logger.e("Error Response: ${e.response?.data}");
@@ -90,7 +128,7 @@ class _SeConnecterState extends State<SeConnecter> {
     }
   }
 
-  //Interface UI
+  // Interface UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -110,7 +148,6 @@ class _SeConnecterState extends State<SeConnecter> {
 
             // Champs de saisie
             IgnorePointer(
-              //empêche l'interaction avec les champs de saisie pendant la connexion
               ignoring: _loading,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,7 +161,6 @@ class _SeConnecterState extends State<SeConnecter> {
                       padding: EdgeInsets.only(
                           left: MediaQuery.of(context).size.width * 0.075),
                       child: Text(
-                        //affichage du message d'erreur s'il y a un problème de connexion
                         _errorMessage!,
                         style: const TextStyle(
                           color: Colors.red,
@@ -150,10 +186,13 @@ class _SeConnecterState extends State<SeConnecter> {
                                 value: _rememberMe,
                                 onChanged: _loading
                                     ? null
-                                    : (bool? newValue) {
+                                    : (bool? newValue) async {
                                         setState(() {
                                           _rememberMe = newValue ?? false;
                                         });
+                                        if (!_rememberMe) {
+                                          await _deleteCredentials();
+                                        }
                                       },
                                 activeColor: const Color(0xFF9381FF),
                                 checkColor: Colors.white,
@@ -171,7 +210,6 @@ class _SeConnecterState extends State<SeConnecter> {
                               ),
                             ),
                             AbsorbPointer(
-                              //élément désactivé pendant le chargement
                               absorbing: _loading,
                               child: TextButton(
                                 onPressed: _loading
@@ -202,10 +240,10 @@ class _SeConnecterState extends State<SeConnecter> {
 
                   const SizedBox(height: 50),
 
-                  //Bouton de connexion
+                  // Bouton de connexion
                   Center(
                     child: _loading
-                        ? const CircularProgressIndicator() //indicateur de chargement
+                        ? const CircularProgressIndicator()
                         : ElevatedButton(
                             onPressed:
                                 (_isButtonEnabled && !_loading) ? _login : null,
@@ -244,10 +282,9 @@ class _SeConnecterState extends State<SeConnecter> {
                   ),
 
                   const SizedBox(height: 20),
-                  //Bouton création de compte
+                  // Bouton création de compte
                   Center(
                     child: AbsorbPointer(
-                      //inactif pendant le chargement de la connexion
                       absorbing: _loading,
                       child: TextButton(
                         onPressed: _loading
@@ -280,9 +317,7 @@ class _SeConnecterState extends State<SeConnecter> {
     );
   }
 
-  //Champs de saisie
-
-  //Saisie du mail
+  // Champ de saisie du mail
   Widget _buildEmailField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -324,7 +359,7 @@ class _SeConnecterState extends State<SeConnecter> {
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 errorText: _isEmailValid
                     ? null
-                    : 'Format email invalide', // Message d'erreur
+                    : 'Format email invalide',
               ),
               onChanged: (value) {
                 setState(() {
@@ -339,7 +374,7 @@ class _SeConnecterState extends State<SeConnecter> {
     );
   }
 
-  //Saisie du mot de passe
+  // Champ de saisie du mot de passe
   Widget _buildPasswordField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
