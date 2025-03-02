@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.models.user import Utilisateur
-from app.models.user import CreerUtilisateur, MiseAJourUtilisateur, LireUtilisateur, MiseAJourMotDePasse
+from app.models.user import Utilisateur, MiseAJourUtilisateur, LireUtilisateur, MiseAJourMotDePasse
 from app.routers.auth import get_current_user
 from app.internal.auth_utils import hash_password
+import logging
 
 router = APIRouter(
     prefix="/users",
@@ -21,11 +21,14 @@ def lire_profil(utilisateur: dict = Depends(get_current_user), db: Session = Dep
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     return utilisateur_db
 
+
+
 @router.put("/me/update")
 def mettre_a_jour_profil(update_data: MiseAJourUtilisateur, utilisateur: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Met à jour les informations du profil de l'utilisateur.
     """
+    logging.info(f"Mise à jour du profil pour {utilisateur['email']}")
     utilisateur_db = db.query(Utilisateur).filter(Utilisateur.email == utilisateur["email"]).first()
     if not utilisateur_db:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
@@ -33,19 +36,31 @@ def mettre_a_jour_profil(update_data: MiseAJourUtilisateur, utilisateur: dict = 
     if update_data.email:
         email_existant = db.query(Utilisateur).filter(Utilisateur.email == update_data.email).first()
         if email_existant and email_existant.email != utilisateur["email"]:
-            raise HTTPException(status_code=400, detail="Cet email est déjà utilisé.")
+            logging.warning(f"Email déjà utilisé : {update_data.email}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"code": "EMAIL_EXISTS", "message": "Cet email est déjà utilisé."}
+            )
         utilisateur_db.email = update_data.email
 
     if update_data.nom_utilisateur:
         username_existant = db.query(Utilisateur).filter(Utilisateur.nom_utilisateur == update_data.nom_utilisateur).first()
         if username_existant and username_existant.nom_utilisateur != utilisateur["nom_utilisateur"]:
-            raise HTTPException(status_code=400, detail="Ce nom d'utilisateur est déjà pris.")
+            logging.warning(f"Nom d'utilisateur déjà pris : {update_data.nom_utilisateur}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"code": "USERNAME_EXISTS", "message": "Ce nom d'utilisateur est déjà pris."}
+            )
         utilisateur_db.nom_utilisateur = update_data.nom_utilisateur
 
     if update_data.telephone:
         telephone_existant = db.query(Utilisateur).filter(Utilisateur.telephone == update_data.telephone).first()
         if telephone_existant and telephone_existant.telephone != utilisateur["telephone"]:
-            raise HTTPException(status_code=400, detail="Ce numéro de téléphone est déjà utilisé.")
+            logging.warning(f"Téléphone déjà utilisé : {update_data.telephone}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"code": "PHONE_EXISTS", "message": "Ce numéro de téléphone est déjà utilisé."}
+            )
         utilisateur_db.telephone = update_data.telephone
 
     if update_data.date_naissance:
@@ -58,6 +73,8 @@ def mettre_a_jour_profil(update_data: MiseAJourUtilisateur, utilisateur: dict = 
         utilisateur_db.coach_assigne = update_data.coach_assigne
 
     db.commit()
+
+    logging.info("Profil mis à jour avec succès")
     return {"result": "success", "code": 200, "detail": "Profil mis à jour"}
 
 
