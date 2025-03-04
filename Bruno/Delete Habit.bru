@@ -1,0 +1,21 @@
+meta {
+  name: Delete Habit
+  type: http
+  seq: 13
+}
+
+delete {
+  url: http://localhost:8080/habits/delete
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MTEyNjUxMH0.28tO7j6UeMqNsn-MqrlvOj5XT4Rush3hr62a_vX5pwk
+}
+
+body:json {
+  {
+    "habitude_id": 1
+  }
+}

@@ -30,7 +30,8 @@ class Habitude(Base):
     __tablename__ = "habitudes"
 
     id = Column(String, primary_key=True, index=True)
-    utilisateur_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Association à un utilisateur
+    #utilisateur_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Association à un utilisateur
+    utilisateur_id = Column(Integer, nullable=False)  # Association à un utilisateur
     nom = Column(String, nullable=False)
     description = Column(String, nullable=True)
     statut = Column(Enum(StatutHabitude), default=StatutHabitude.non_commence)

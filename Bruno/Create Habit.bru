@@ -1,0 +1,27 @@
+meta {
+  name: Create Habit
+  type: http
+  seq: 11
+}
+
+post {
+  url: http://localhost:8080/habits/create
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MTEyNjMwMX0.6gG0n5AAH1d7lTLkuOPepA5BMpSrbMacTCXJwn3MQAM
+}
+
+body:json {
+  {
+      "nom": "Aller courir",
+      "user_id": 1,
+      "desc": "Courir 5 km tous les matins",
+      "statut": 1,
+      "freq": "Quotidien",
+      "label": "Sport",
+      "echeance": "2025-01-01T00:00:00"
+  }
+}

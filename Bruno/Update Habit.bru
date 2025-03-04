@@ -1,0 +1,25 @@
+meta {
+  name: Update Habit
+  type: http
+  seq: 12
+}
+
+put {
+  url: http://localhost:8080/habits/edit
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MTEyNjMwMX0.6gG0n5AAH1d7lTLkuOPepA5BMpSrbMacTCXJwn3MQAM
+}
+
+body:json {
+  {"id": 1,
+  "nom": "Nouvelle habitude"}
+}
+
+body:text {
+  id: 1
+  nom: Nouvelle habitude
+}
