@@ -14,36 +14,37 @@ class _QuestionnaireState extends State<Questionnaire> {
 
   Map<int, bool?> responses = {}; // Stocke les réponses au questionnaire
 
-  final List<String> section1Questions = [
-    "Affirmation 1",
-    "Affirmation 2",
-    "Affirmation 3",
-    "Affirmation 4",
-    "Affirmation 5"
+  //Affirmations
+  final List<String> section1Questions = [ // Section 1 : Extraversion (E) - Introversion (I)
+    "J'ai besoin de temps seul pour me ressourcer après des interactions sociales.",
+    "Je m'exprime facilement dans les discussions de groupe. ",
+    "Je préfère les discussions profondes en tête-à-tête plutôt que les grandes réunions sociales.",
+    "Je me sens énergisé après avoir passé du temps avec un groupe de personnes.",
+    "Je me sens plus productif lorsque je travaille seul dans un environnement calme."
   ];
 
-  final List<String> section2Questions = [
-    "Affirmation 6",
-    "Affirmation 7",
-    "Affirmation 8",
-    "Affirmation 9",
-    "Affirmation 10"
+  final List<String> section2Questions = [ // Section 2 : Sensation (S) - Intuition (N)
+    "J'aime explorer de nouvelles idées et théories, même abstraites.",
+    "Je préfère suivre des étapes précises et logiques dans mon travail. ",
+    "J'aime imaginer des scénarios et explorer des perspectives nouvelles. ",
+    "Je me sens plus à l'aise avec des informations concrètes et vérifiables. ",
+    "Je fais souvent des liens entre des concepts qui semblent sans rapport. "
   ];
 
-  final List<String> section3Questions = [
-    "Affirmation 11",
-    "Affirmation 12",
-    "Affirmation 13",
-    "Affirmation 14",
-    "Affirmation 15"
+  final List<String> section3Questions = [ // Section 3 : Pensée (T) - Sentiment (F)
+    "J'ai tendance à me laisser guider par mes sentiments dans mes choix importants.",
+    "Je préfère dire la vérité même si elle peut blesser quelqu'un. ",
+    "Je trouve important de valoriser les sentiments et le bien-être des autres.",
+    "Je trouve important d'analyser les choses avec rigueur et rationalité. ",
+    "Je prends en compte les émotions des autres avant de prendre une décision. "
   ];
 
-  final List<String> section4Questions = [
-    "Affirmation 16",
-    "Affirmation 17",
-    "Affirmation 18",
-    "Affirmation 19",
-    "Affirmation 20",
+  final List<String> section4Questions = [ // Section 4 : Jugement (J) - Perception (P)
+    "Je me sens plus productif lorsque je peux explorer différentes approches et solutions.",
+    "J'aime planifier les choses à l'avance et éviter les imprévus.",
+    "Je me sens plus à l'aise quand j'ai plusieurs options ouvertes plutôt qu'un plan rigide.",
+    "Je termine toujours mes tâches bien avant la date limite. ",
+    "Je préfère expérimenter et ajuster au fur et à mesure plutôt que suivre des règles fixes. ",
   ];
 
   void _nextPage() {
@@ -74,25 +75,195 @@ class _QuestionnaireState extends State<Questionnaire> {
 
   bool _showError = false;
 
+  String calculerMBTI(Map<int, bool?> responses) {
+    // Liste des types associés à chaque question
+    List<String> questionTypes = [
+      "I", "E", "I", "E",
+      "I", // Section 1 : Extraversion (E) - Introversion (I)
+      "N", "S", "N", "S", "N", // Section 2 : Sensation (S) - Intuition (N)
+      "F", "T", "F", "T", "F", // Section 3 : Pensée (T) - Sentiment (F)
+      "P", "J", "P", "J", "P" // Section 4 : Jugement (J) - Perception (P)
+    ];
+
+    // Initialisation des scores
+    int E = 0, I = 0, S = 0, N = 0, T = 0, F = 0, J = 0, P = 0;
+
+    // Parcours de toutes les questions
+    for (int i = 0; i < 20; i++) {
+      if (responses[i] == true) {
+        // Si l'utilisateur est "D'accord": on attribue la lettre associée à l'affirmation
+        switch (questionTypes[i]) {
+          case "E":
+            E++;
+            break;
+          case "I":
+            I++;
+            break;
+          case "S":
+            S++;
+            break;
+          case "N":
+            N++;
+            break;
+          case "T":
+            T++;
+            break;
+          case "F":
+            F++;
+            break;
+          case "J":
+            J++;
+            break;
+          case "P":
+            P++;
+            break;
+        }
+      } else {
+        // Si l'utilisateur est "Pas d'accord": on attribue la lettre opposée à l'affirmation
+        switch (questionTypes[i]) {
+          case "E":
+            I++;
+            break;
+          case "I":
+            E++;
+            break;
+          case "S":
+            N++;
+            break;
+          case "N":
+            S++;
+            break;
+          case "T":
+            F++;
+            break;
+          case "F":
+            T++;
+            break;
+          case "J":
+            P++;
+            break;
+          case "P":
+            J++;
+            break;
+        }
+      }
+    }
+
+    // Détermination du type MBTI final
+    String typeMBTI = "";
+    typeMBTI += (E > I) ? "E" : "I";
+    typeMBTI += (S > N) ? "S" : "N";
+    typeMBTI += (T > F) ? "T" : "F";
+    typeMBTI += (J > P) ? "J" : "P";
+
+    return typeMBTI;
+  }
+
+  String attribuerCoach(String mbti) {
+    if (["INFJ", "INFP", "ENFJ", "ENFP"].contains(mbti)) {
+      return "Coach Diplomate";
+    } else if (["ISTP", "ISFP", "ESTP", "ESFP"].contains(mbti)) {
+      return "Coach Explorateur";
+    } else if (["ISTJ", "ISFJ", "ESTJ", "ESFJ"].contains(mbti)) {
+      return "Coach Sentinelle";
+    } else if (["INTJ", "INTP", "ENTJ", "ENTP"].contains(mbti)) {
+      return "Coach Analyste";
+    } else {
+      return "Coach Inconnu"; //en cas d'erreur
+    }
+  }
+
+  //Pop-Up Attribution coach
   void _showCompletionPopup(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Questionnaire Terminé'),
-          content: const Text('Merci d\'avoir complété le questionnaire !'),
-          actions: [
-            TextButton(
-              onPressed: () {
+  String mbti = calculerMBTI(responses);
+  String coach = attribuerCoach(mbti);
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(
+            color: Color(0xFF9381FF), 
+            width: 1,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              "assets/images/coach_attribue.png",
+              height: 110,
+              width: 110,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 15),
+
+            Text(
+              "Un coach a bien été personnalisé:",
+              style: TextStyle(
+                fontFamily: "NunitoBold",
+                fontSize: 18,
+                color: Color(0xFF2F2F2F),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 18),
+
+            Text(
+              coach,
+              style: TextStyle(
+                fontFamily: "NunitoBold",
+                fontSize: 20,
+                color: Color(0xFF2F2F2F),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 18),
+
+            Text(
+              "Vous pourrez revenir sur votre choix plus tard",
+              style: TextStyle(
+                fontFamily: "Nunito",
+                fontSize: 13,
+                color: Color.fromARGB(138, 47, 47, 47),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+
+            GestureDetector(
+              onTap: () {
                 Navigator.of(context).pop();
+                Navigator.pushNamed(context, "/accueil"); 
               },
-              child: const Text('OK'),
+              child: Container(
+                width: double.infinity, 
+                padding: EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)],
+                  ),
+                  borderRadius: BorderRadius.circular(12), 
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  "OK",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: "Nunito",
+                    fontSize: 15,
+                  ),
+                ),
+              ),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -106,8 +277,7 @@ class _QuestionnaireState extends State<Questionnaire> {
         },
         children: [
           _buildWelcomePage(),
-          _buildSectionPage("Extraversion (E) - Introversion (I)", 1,
-              isFirstSection: true),
+          _buildSectionPage("Extraversion (E) - Introversion (I)", 1,isFirstSection: true),
           _buildSectionPage("Sensation (S) - Intuition (N)", 2),
           _buildSectionPage("Pensée (T) - Sentiment (F)", 3),
           _buildSectionPage("Jugement (J) - Perception (P)", 4, isLast: true),
@@ -116,6 +286,7 @@ class _QuestionnaireState extends State<Questionnaire> {
     );
   }
 
+  //Page bienvenue
   Widget _buildWelcomePage() {
     return Center(
       child: Column(
@@ -148,6 +319,7 @@ class _QuestionnaireState extends State<Questionnaire> {
     );
   }
 
+  //Structure des pages du questionnaire
   Widget _buildSectionPage(String title, int sectionNumber,
       {bool isFirstSection = false, bool isLast = false}) {
     return Column(
@@ -192,19 +364,18 @@ class _QuestionnaireState extends State<Questionnaire> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Text(
             title,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: "BricolageGrotesqueBold",
-              fontSize: 22,
+              fontSize: 18,
             ),
           ),
         ),
         Expanded(child: _buildQuestionsSection(sectionNumber - 1)),
-
-        if (_showError)
+        if (_showError) //Message d'erreur si on ne répond pas à toutes les affirmations
           Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
@@ -213,7 +384,6 @@ class _QuestionnaireState extends State<Questionnaire> {
                   color: Colors.red, fontSize: 14, fontFamily: "Nunito"),
             ),
           ),
-
         Padding(
           padding: const EdgeInsets.only(bottom: 32),
           child: GestureDetector(
@@ -258,45 +428,54 @@ class _QuestionnaireState extends State<Questionnaire> {
     ];
 
     return SingleChildScrollView(
-      child: Column(
-        children: [
-          for (int i = 0; i < allSections[sectionIndex].length; i++)
-            Column(
-              children: [
-                SizedBox(height: 20),
-                Text(allSections[sectionIndex][i],
-                    style: TextStyle(fontFamily: "Nunito", fontSize: 18)),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Radio<bool>(
-                      value: true,
-                      groupValue: responses[sectionIndex * 5 + i],
-                      onChanged: (bool? value) {
-                        setState(() {
-                          responses[sectionIndex * 5 + i] = value;
-                        });
-                      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          children: [
+            for (int i = 0; i < allSections[sectionIndex].length; i++)
+              Column(
+                children: [
+                  SizedBox(height: 20),
+                  Text(
+                    allSections[sectionIndex][i],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: "Nunito",
+                      fontSize: 15,
                     ),
-                    Text("D'accord"),
-                    SizedBox(width: 20),
-                    Radio<bool>(
-                      value: false,
-                      groupValue: responses[sectionIndex * 5 + i],
-                      onChanged: (bool? value) {
-                        setState(() {
-                          responses[sectionIndex * 5 + i] = value;
-                        });
-                      },
-                    ),
-                    Text("Pas d'accord"),
-                  ],
-                ),
-              ],
-            ),
-          SizedBox(height: 40),
-        ],
+                  ),
+                  SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Radio<bool>(
+                        value: true,
+                        groupValue: responses[sectionIndex * 5 + i],
+                        onChanged: (bool? value) {
+                          setState(() {
+                            responses[sectionIndex * 5 + i] = value;
+                          });
+                        },
+                      ),
+                      Text("D'accord", style: TextStyle(fontSize: 13)),
+                      SizedBox(width: 20),
+                      Radio<bool>(
+                        value: false,
+                        groupValue: responses[sectionIndex * 5 + i],
+                        onChanged: (bool? value) {
+                          setState(() {
+                            responses[sectionIndex * 5 + i] = value;
+                          });
+                        },
+                      ),
+                      Text("Pas d'accord", style: TextStyle(fontSize: 13)),
+                    ],
+                  ),
+                ],
+              ),
+            SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
