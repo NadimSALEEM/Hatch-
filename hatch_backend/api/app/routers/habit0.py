@@ -132,14 +132,14 @@ def modifier_habitude(
 
 @router.delete("/delete")
 def supprimer_habitude(
-    habitude_id: int,
+    habitude_data: ModifierHabitude,
     utilisateur: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     
     # Vérifier si l'habitude existe et appartient à l'utilisateur
     habitude = db.query(Habitude).filter(
-        Habitude.id == habitude_id, 
+        Habitude.id == habitude_data.id, 
         Habitude.user_id == utilisateur["id"]
     ).first()
 
