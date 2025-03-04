@@ -91,7 +91,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         logging.warning("Utilisateur non trouvé")
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
 
-    return {"email": utilisateur.email, "message": "Authenticated"}
+    return {"id": utilisateur.id, "email": utilisateur.email, "message": "Authenticated"}
 
 @router.post("/register")
 def register_user(user: CreerUtilisateur, db: Session = Depends(get_db)):

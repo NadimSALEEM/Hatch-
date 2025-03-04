@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -61,6 +61,7 @@ class LireHabitude(BaseModel):
     label: Optional[str] = None
     echeance: Optional[datetime] = None
 
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Création des tables avec gestion des erreurs

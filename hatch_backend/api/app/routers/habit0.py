@@ -18,25 +18,43 @@ router = APIRouter(
     tags=["habits"]
 )
 
-@router.get("/", response_model=LireHabitude)
+import traceback
+
+@router.get("/{habitude_id}", response_model=LireHabitude)
 def lire_habitude(
-    habitude_id: str,
+    habitude_id: int,
     utilisateur: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Récupère toutes les caractéristiques d'une habitude spécifique de l'utilisateur connecté.
     """
-    # Vérifier si l'habitude existe et appartient à l'utilisateur
-    habitude = db.query(Habitude).filter(
-        Habitude.id == habitude_id, 
-        Habitude.user_id == utilisateur["id"]
-    ).first()
+    try:
+        # Vérifier que `utilisateur` contient bien un ID
+        user_id = utilisateur.get("id")
+        if user_id is None:
+            raise HTTPException(status_code=400, detail="Utilisateur non valide, ID manquant")
 
-    if not habitude:
-        raise HTTPException(status_code=404, detail="Habitude non trouvée ou accès non autorisé")
+        # Vérification dans la base de données
+        habitude = db.query(Habitude).filter(
+            Habitude.id == habitude_id,
+            Habitude.user_id == user_id
+        ).first()
 
-    return habitude
+        if not habitude:
+            raise HTTPException(status_code=404, detail="Habitude non trouvée ou accès interdit")
+
+        print(f"Habitude trouvée: {habitude}")
+
+        #Retourne l'objet `habitude` converti en `LireHabitude`
+        return LireHabitude.from_orm(habitude)
+
+    except HTTPException as http_err:
+        raise http_err
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur interne du serveur: {str(e)}")
+
 
 
 @router.post("/create", response_model=CreerHabitude, status_code=status.HTTP_201_CREATED)
