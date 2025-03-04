@@ -141,7 +141,7 @@ class _AccueilState extends State<Accueil> {
                 onTap: () => Navigator.pushNamed(context, '/toutes_les_habitudes'),
                 child: Text(
                   'Tout',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFFAB96FF)),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFAB96FF)),
                 ),
               ),
             ],
