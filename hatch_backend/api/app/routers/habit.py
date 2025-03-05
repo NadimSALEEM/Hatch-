@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.models.habit0 import Habitude, LireHabitude, ModifierHabitude, CreerHabitude
+from app.models.habit import Habitude, LireHabitude, ModifierHabitude, CreerHabitude
 from typing import List
 from app.models.user import Utilisateur
 from app.routers.auth import get_current_user
