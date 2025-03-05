@@ -16,6 +16,8 @@ class _AccueilState extends State<Accueil> {
   final Dio _dio = Dio();
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
+  List<dynamic> _habits = [];
+
   // Index de la page actuelle pour le bas de navigation
   int _selectedIndex = 0;
 
@@ -23,6 +25,7 @@ class _AccueilState extends State<Accueil> {
   void initState() {
     super.initState();
     fetchUsername();
+    fetchHabits();
   }
 
   // Récupérer le nom d'utilisateur
@@ -46,6 +49,38 @@ class _AccueilState extends State<Accueil> {
     }
   }
 
+  Future<void> fetchHabits() async {
+    try {
+      String? token = await _secureStorage.read(key: "jwt_token");
+      if (token == null) return;
+
+      final response = await _dio.get(
+        "http://localhost:8080/habits/",
+        options: Options(headers: {"Authorization": "Bearer $token"}),
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> allHabits = response.data;
+
+        // Filtrer uniquement les habitudes "En cours" (1) et "En pause" (0)
+        List<dynamic> filteredHabits = allHabits.where((habit) {
+          return habit["statut"] == 1 || habit["statut"] == 0;
+        }).toList();
+
+        // Trier : "En cours" (1) en haut, "En pause" (0) en bas
+        filteredHabits.sort((a, b) => b["statut"].compareTo(a["statut"]));
+
+        setState(() {
+          _habits = filteredHabits;
+        });
+      }
+    } catch (e) {
+      print("Erreur lors de la récupération des habitudes : $e");
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,7 +88,7 @@ class _AccueilState extends State<Accueil> {
       appBar: _buildAppBar(),
       body: Column(
         children: [
-          _buildImageContainer(),
+          _buildImageContainer(context),
           Expanded(flex: 3, child: _buildHabitsContainer()),
         ],
       ),
@@ -104,21 +139,48 @@ class _AccueilState extends State<Accueil> {
     );
   }
 
-  // Conteneur de l'image
-  Widget _buildImageContainer() {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.3,
-      width: double.infinity,
-      margin: EdgeInsets.all(16),
-      padding: EdgeInsets.all(16),
-      decoration: _boxDecoration(),
-      child: Image.asset(
-        'assets/images/dragons_welcome.png',
-        width: MediaQuery.of(context).size.width * 0.8,
-        fit: BoxFit.contain,
-      ),
-    );
-  }
+// Conteneur de l'image
+Widget _buildImageContainer(BuildContext context) {
+  return Container(
+    height: MediaQuery.of(context).size.height * 0.3,
+    width: double.infinity,
+    margin: EdgeInsets.all(16),
+    padding: EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Color(0xFFAB96FF).withOpacity(0.1), // Lueur violette autour
+          blurRadius: 20,
+          spreadRadius: 5,
+          offset: Offset(0, 5),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        Text(
+          "🔥Tes habitudes forgent des dragons légendaires🔥",
+          style: TextStyle(
+            fontSize: 14,
+            fontFamily: 'NunitoSemiBold',
+            fontWeight: FontWeight.w500,
+            color: Colors.orange,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 10), // Espacement avant l'image
+        Image.asset(
+          'assets/images/dragons_welcome.png',
+          width: MediaQuery.of(context).size.width * 0.5,
+          fit: BoxFit.contain,
+        ),
+      ],
+    ),
+  );
+}
+
 
   // Conteneur des habitudes
   Widget _buildHabitsContainer() {
@@ -133,16 +195,28 @@ class _AccueilState extends State<Accueil> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Habitudes',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2F2F2F)),
+              Row(
+                children: [
+                  Text(
+                    'Habitudes (${_habits.length})', // Ajoute le nombre d’habitudes
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2F2F2F)),
+                  ),
+                ],
               ),
+
               GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/toutes_les_habitudes'),
-                child: Text(
-                  'Tout',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFAB96FF)),
+                child: Row(
+                  children: [
+                    Text(
+                      'Tout',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFAB96FF)),
+                    ),
+                    SizedBox(width: 4), // Ajoute un petit espace
+                    Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFFAB96FF)),
+                  ],
                 ),
+
               ),
             ],
           ),
@@ -155,36 +229,35 @@ class _AccueilState extends State<Accueil> {
 
   // Liste des habitudes
   Widget _buildHabitList() {
-    return ListView.builder(
-      itemCount: 10,
-      itemBuilder: (context, index) {
-        String status = index % 3 == 0
-            ? 'En cours'
-            : index % 3 == 1
-                ? 'En pause'
-                : 'Obtenue';
+    if (_habits.isEmpty) {
+      return Center(
+        child: Text(
+          "Aucune habitude en cours ou en pause.",
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
 
-        Color statusColor = status == 'En pause'
-            ? Colors.black
-            : (status == 'Obtenue' ? Color(0xFFAB96FF) : Colors.black);
-        Color cardColor =
-            status == 'En cours' ? Color(0xFFEDE7FF) : Colors.white;
-        FontWeight titleWeight =
-            status == 'En pause' ? FontWeight.normal : FontWeight.bold;
+    return ListView.builder(
+      itemCount: _habits.length,
+      itemBuilder: (context, index) {
+        var habit = _habits[index];
+
+        String status = habit["statut"] == 1 ? "En cours" : "En pause";
+        Color statusColor = status == 'En pause' ? Colors.grey : Colors.orange;
+        Color cardColor = status == 'En cours' ? Color(0xFFEDE7FF) : Colors.white;
+        FontWeight titleWeight = status == 'En pause' ? FontWeight.normal : FontWeight.bold;
 
         Icon statusIcon = status == 'En cours'
             ? Icon(Icons.play_circle_fill, color: Colors.orange, size: 28)
-            : status == 'En pause'
-                ? Icon(Icons.pause_circle_filled, color: Colors.grey, size: 28)
-                : Icon(Icons.check_circle, color: Color(0xFFAB96FF), size: 28);
+            : Icon(Icons.pause_circle_filled, color: Colors.grey, size: 28);
 
         return GestureDetector(
           onTap: () {
-            // Naviguer vers la page habitude avec l'index en paramètre
             Navigator.pushNamed(
-              context, 
+              context,
               '/habitude',
-              arguments: {'habitIndex': index + 1}, // Envoyer l'index à la page suivante
+              arguments: {'habitId': habit["id"]}, // Utiliser l'ID réel de l'habitude
             );
           },
           child: Card(
@@ -207,11 +280,9 @@ class _AccueilState extends State<Accueil> {
                           statusIcon,
                           SizedBox(width: 12),
                           Text(
-                            'Habitude ${index + 1}',
+                            habit["nom"],
                             style: TextStyle(
-                              color: status == 'En pause'
-                                  ? Colors.black
-                                  : Color(0xFFAB96FF),
+                              color: Color(0xFFAB96FF),
                               fontWeight: titleWeight,
                               fontSize: 16,
                             ),
@@ -230,7 +301,7 @@ class _AccueilState extends State<Accueil> {
                   if (status == 'En cours') ...[
                     SizedBox(height: 6),
                     Text(
-                      '${(index + 1) * 5} jours enchaînés',
+                      '${habit["nb_jours_consecutifs"] ?? 0} jours enchaînés',
                       style: TextStyle(
                         color: Colors.orange,
                         fontWeight: FontWeight.w400,
@@ -246,6 +317,8 @@ class _AccueilState extends State<Accueil> {
       },
     );
   }
+
+
 
 
   //  Barre de navigation en bas

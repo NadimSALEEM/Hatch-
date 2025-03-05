@@ -1,17 +1,17 @@
 meta {
   name: Delete Habit
   type: http
-  seq: 4
+  seq: 5
 }
 
 delete {
-  url: http://localhost:8080/habits/delete
+  url: http://localhost:8080/habits/1/delete
   body: json
   auth: none
 }
 
 headers {
-  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MTEzNTU5M30.Bs3BF-SHHkvTHEHjfRKX5a-LoOGC5yaVlbgvrZEO_1k
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MTE0MjU0OH0.rXOwzz2N5cfD7Wi4ZR6Tc5kl0mCBDJHUIi-aPkaLqqA
 }
 
 body:json {

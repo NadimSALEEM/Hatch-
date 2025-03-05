@@ -1,4 +1,5 @@
 import logging
+import traceback
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db import get_db
@@ -18,7 +19,22 @@ router = APIRouter(
     tags=["habits"]
 )
 
-import traceback
+@router.get("/", response_model=List[LireHabitude])
+def lire_toutes_habitudes(
+    utilisateur: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Récupère toutes les habitudes de l'utilisateur connecté.
+    """
+    user_id = utilisateur.get("id")
+    if user_id is None:
+        raise HTTPException(status_code=400, detail="Utilisateur non valide, ID manquant")
+
+    habitudes = db.query(Habitude).filter(Habitude.user_id == user_id).all()
+
+    return [LireHabitude.from_orm(h) for h in habitudes]
+
 
 @router.get("/{habitude_id}", response_model=LireHabitude)
 def lire_habitude(
@@ -27,34 +43,17 @@ def lire_habitude(
     db: Session = Depends(get_db)
 ):
     """
-    Récupère toutes les caractéristiques d'une habitude spécifique de l'utilisateur connecté.
+    Récupère les détails d'une habitude spécifique.
     """
-    try:
-        # Vérifier que `utilisateur` contient bien un ID
-        user_id = utilisateur.get("id")
-        if user_id is None:
-            raise HTTPException(status_code=400, detail="Utilisateur non valide, ID manquant")
+    habitude = db.query(Habitude).filter(
+        Habitude.id == habitude_id,
+        Habitude.user_id == utilisateur["id"]
+    ).first()
 
-        # Vérification dans la base de données
-        habitude = db.query(Habitude).filter(
-            Habitude.id == habitude_id,
-            Habitude.user_id == user_id
-        ).first()
+    if not habitude:
+        raise HTTPException(status_code=404, detail="Habitude non trouvée ou accès interdit")
 
-        if not habitude:
-            raise HTTPException(status_code=404, detail="Habitude non trouvée ou accès interdit")
-
-        print(f"Habitude trouvée: {habitude}")
-
-        #Retourne l'objet `habitude` converti en `LireHabitude`
-        return LireHabitude.from_orm(habitude)
-
-    except HTTPException as http_err:
-        raise http_err
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur interne du serveur: {str(e)}")
-
+    return LireHabitude.from_orm(habitude)
 
 
 @router.post("/create", response_model=CreerHabitude, status_code=status.HTTP_201_CREATED)
@@ -70,19 +69,17 @@ def creer_habitude(
     if not utilisateur_db:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
 
-    # Création de l'objet Habitude
     nouvelle_habitude = Habitude(
         user_id=utilisateur_db.id,
         nom=habitude_data.nom,
         desc=habitude_data.desc,
         statut=habitude_data.statut,
-        label= habitude_data.label,
+        label=habitude_data.label,
         freq=habitude_data.freq,
         cree_le=datetime.utcnow(),
         maj_le=datetime.utcnow()
     )
 
-    # Ajouter et enregistrer dans la base de données
     db.add(nouvelle_habitude)
     db.commit()
     db.refresh(nouvelle_habitude)
@@ -90,27 +87,22 @@ def creer_habitude(
     return nouvelle_habitude
 
 
-@router.put("/edit")
+@router.put("/{habitude_id}/edit")
 def modifier_habitude(
+    habitude_id: int,
     habitude_data: ModifierHabitude,
     utilisateur: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Modifie une habitude existante appartenant à l'utilisateur connecté.
+    Modifie une habitude spécifique.
     """
-
-    if not habitude_data.id:
-        logger.info("Modification échouée : L'ID de l'habitude est requis")
-        raise HTTPException(status_code=400, detail="L'ID de l'habitude est requis")
-
     habitude = db.query(Habitude).filter(
-        Habitude.id == habitude_data.id, 
+        Habitude.id == habitude_id, 
         Habitude.user_id == utilisateur["id"]
     ).first()
 
     if not habitude:
-        logger.info(f"Modification échouée : Habitude ID {habitude_data.id} non trouvée pour l'utilisateur {utilisateur['id']}")
         raise HTTPException(status_code=404, detail="Habitude non trouvée ou accès non autorisé")
 
     if habitude_data.nom is not None:
@@ -124,28 +116,31 @@ def modifier_habitude(
     if habitude_data.label is not None:
         habitude.label = habitude_data.label
 
+    # Mise à jour automatique de `maj_le`
+    habitude.maj_le = datetime.utcnow()
+
     db.commit()
-    logger.info(f"Modification réussie : Habitude ID {habitude.id} mise à jour par l'utilisateur {utilisateur['id']}")
 
-    return {"result": "success", "code": 200, "detail": "Habitude mis à jour"}
+    return {"result": "success", "code": 200, "detail": "Habitude mise à jour"}
 
 
-@router.delete("/delete")
+@router.delete("/{habitude_id}/delete")
 def supprimer_habitude(
-    habitude_data: ModifierHabitude,
+    habitude_id: int,
     utilisateur: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    
-    # Vérifier si l'habitude existe et appartient à l'utilisateur
+    """
+    Supprime une habitude spécifique.
+    """
     habitude = db.query(Habitude).filter(
-        Habitude.id == habitude_data.id, 
+        Habitude.id == habitude_id, 
         Habitude.user_id == utilisateur["id"]
     ).first()
 
     if not habitude:
         raise HTTPException(status_code=404, detail="Habitude non trouvée ou accès non autorisé")
-    
+
     db.delete(habitude)
     db.commit()
 

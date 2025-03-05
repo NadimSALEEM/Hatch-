@@ -240,14 +240,16 @@ Widget _buildProgressSection() {
                       colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)],
                     ).createShader(bounds);
                   },
-                  child: const Text(
-                    'Tout',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: 'NunitoBold',
-                      color: Colors.white,
+                  child: Row(
+                  children: [
+                    Text(
+                      'Tout',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFAB96FF)),
                     ),
-                  ),
+                    SizedBox(width: 4), // Ajoute un petit espace
+                    Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFFAB96FF)),
+                  ],
+                ),
                 ),
               ),
             ],
@@ -345,13 +347,15 @@ Widget _buildObjectivesSection() {
               ),
               GestureDetector(
                 onTap: () {},
-                child: Text(
-                  'Tout',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'NunitoBold',
-                    color: Color(0xFF9381FF),
-                  ),
+                child: Row(
+                  children: [
+                    Text(
+                      'Tout',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFAB96FF)),
+                    ),
+                    SizedBox(width: 4), // Ajoute un petit espace
+                    Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFFAB96FF)),
+                  ],
                 ),
               ),
             ],
