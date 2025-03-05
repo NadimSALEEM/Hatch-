@@ -1,15 +1,21 @@
 meta {
-  name: Delete
+  name: Delete objectif
   type: http
-  seq: 8
+  seq: 4
 }
 
 delete {
-  url: http://localhost:8080/users/me/supprimer
-  body: none
+  url: http://localhost:8080/objectifs/delete
+  body: json
   auth: none
 }
 
 headers {
   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MTEzNTU5M30.Bs3BF-SHHkvTHEHjfRKX5a-LoOGC5yaVlbgvrZEO_1k
+}
+
+body:json {
+  {
+    "id": 1
+  }
 }

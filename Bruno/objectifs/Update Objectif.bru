@@ -1,11 +1,11 @@
 meta {
-  name: Update Habit
+  name: Update Objectif
   type: http
   seq: 3
 }
 
 put {
-  url: http://localhost:8080/habits/edit
+  url: http://localhost:8080/objectifs/edit
   body: json
   auth: none
 }
@@ -15,11 +15,14 @@ headers {
 }
 
 body:json {
-  {"id": 1,
-  "nom": "Nouvelle habitude"}
-}
-
-body:text {
-  id: 1
-  nom: Nouvelle habitude
+  {
+    "id": 1,
+    "nom": "Courir 20km",
+    "statut": 2,
+    "compteur": 10,
+    "unite_compteur": "km",
+    "total": 20,
+    "coach_id": 3
+  }
+  
 }
