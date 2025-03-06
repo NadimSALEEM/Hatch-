@@ -1,0 +1,19 @@
+meta {
+  name: Creer coach
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/coach/create
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "nom": "Jean Dupont",
+      "desc": "Coach en développement personnel",
+      "mbti": "ENTP"
+  }
+}

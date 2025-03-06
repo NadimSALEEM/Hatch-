@@ -1,0 +1,20 @@
+meta {
+  name: Update coach
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8080/coach/edit
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id":1,
+    "nom": "Bertrand",
+    "mbti": "INFP",
+    "desc": "desc2"
+  }
+}
