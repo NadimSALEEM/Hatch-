@@ -58,25 +58,31 @@ class _HabitudeState extends State<Habitude> {
   }  
 
 
-  Future<void> fetchObjectives() async {
-    try {
-      String? token = await _secureStorage.read(key: "jwt_token");
-      if (token == null) return;
-
-      final response = await _dio.get(
-        "http://localhost:8080/objectifs/${widget.habitId}",
-        options: Options(headers: {"Authorization": "Bearer $token"}),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          _objectifs = response.data;
-        });
-      }
-    } catch (e) {
-      print("Erreur lors du chargement des objectifs : $e");
+Future<void> fetchObjectives() async {
+  try {
+    String? token = await _secureStorage.read(key: "jwt_token");
+    if (token == null) {
+      print("Erreur : Token JWT non trouvé.");
+      return;
     }
+
+    final response = await _dio.get(
+      "http://localhost:8080/habits/${widget.habitId}/objectifs",
+      options: Options(headers: {"Authorization": "Bearer $token"}),
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        _objectifs = response.data;
+      });
+    } else {
+      print("Erreur HTTP ${response.statusCode} : ${response.data}");
+    }
+  } catch (e) {
+    print("Erreur lors du chargement des objectifs : $e");
   }
+}
+
 
 
   @override
@@ -483,6 +489,9 @@ Widget _buildProgressSection() {
 
 
 Widget _buildObjectivesSection() {
+  // Filtrer uniquement les objectifs actifs
+  List<dynamic> objectifsActifs = _objectifs.where((objectif) => objectif["statut"] == 1).toList();
+
   return Card(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     elevation: 4,
@@ -505,14 +514,16 @@ Widget _buildObjectivesSection() {
                 ),
               ),
               GestureDetector(
-                onTap: () {}, // Ajouter une action si nécessaire
+                onTap: () {
+                  Navigator.pushNamed(context, '/tous_les_objectifs', arguments: {'habitId': widget.habitId});
+                },
                 child: Row(
                   children: [
                     Text(
                       'Tout',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFAB96FF)),
                     ),
-                    SizedBox(width: 4), // Espacement
+                    SizedBox(width: 4),
                     Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFFAB96FF)),
                   ],
                 ),
@@ -521,15 +532,27 @@ Widget _buildObjectivesSection() {
           ),
           const SizedBox(height: 10),
 
-          _objectifs.isEmpty
-              ? Center(
-                  child: Text(
-                    "Aucun objectif défini.",
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
+          objectifsActifs.isEmpty
+              ? Column(
+                  children: [
+                    Center(
+                      child: Text(
+                        "Aucun objectif actif pour l'instant.",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Center(
+                      child: Text(
+                        "Si vous voulez voir les objectifs en pause, cliquez sur 'Tout'.",
+                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 )
               : Column(
-                  children: _objectifs.map((objectif) {
+                  children: objectifsActifs.map((objectif) {
                     double progressValue = objectif["compteur"] / objectif["total"];
                     return Container(
                       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -579,11 +602,11 @@ Widget _buildObjectivesSection() {
                                 ),
                               ),
                               Text(
-                                objectif["statut"] == 1 ? 'Actif' : 'En pause',
+                                'Actif',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontFamily: 'NunitoBold',
-                                  color: objectif["statut"] == 1 ? Colors.green : Colors.red,
+                                  color: Colors.green,
                                 ),
                               ),
                             ],
@@ -605,7 +628,7 @@ Widget _buildObjectivesSection() {
             ),
             child: ElevatedButton.icon(
               onPressed: () {
-                Navigator.pushNamed(context, '/ajouter_objectif', arguments: {'habitId': widget.habitId});
+                Navigator.pushNamed(context, '/creer_objectif');
               },
               icon: const Icon(Icons.add, color: Colors.white),
               label: const Text(
@@ -629,6 +652,7 @@ Widget _buildObjectivesSection() {
     ),
   );
 }
+
 
 
 
