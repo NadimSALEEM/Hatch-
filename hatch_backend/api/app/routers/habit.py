@@ -74,8 +74,9 @@ def creer_habitude(
         nom=habitude_data.nom,
         desc=habitude_data.desc,
         statut=habitude_data.statut,
-        label=habitude_data.label,
+        labels=habitude_data.labels,
         freq=habitude_data.freq,
+        prio=habitude_data.prio,
         cree_le=datetime.utcnow(),
         maj_le=datetime.utcnow()
     )
@@ -113,8 +114,10 @@ def modifier_habitude(
         habitude.statut = habitude_data.statut
     if habitude_data.freq is not None:
         habitude.freq = habitude_data.freq
-    if habitude_data.label is not None:
-        habitude.label = habitude_data.label
+    if habitude_data.labels is not None:
+        habitude.labels = habitude_data.labels
+    if habitude_data.prio is not None:
+        habitude.prio = habitude_data.prio
 
     # Mise à jour automatique de `maj_le`
     habitude.maj_le = datetime.utcnow()

@@ -30,7 +30,12 @@ class MainApp extends StatelessWidget {
         '/questionnaire': (context) => AuthGuard(page: Questionnaire()),
         '/creer_objectif': (context) => AuthGuard(page: CreerObjectif()),
         '/creer_une_habitude': (context) => AuthGuard(page: CreerHabitude()),
-        '/habitude': (context) => AuthGuard(page: Habitude()),
+
+        '/habitude': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return AuthGuard(page: Habitude(habitId: args['habitId']));
+        },
+
         '/parametres_habitude': (context) => AuthGuard(page: ParametresHabitude()),
         '/post_creation_habitude': (context) => AuthGuard(page: PostCreationHabitude()),
         '/progres_habitude': (context) => AuthGuard(page: ProgresHabitude()),
