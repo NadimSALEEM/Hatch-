@@ -1,12 +1,12 @@
 import os
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
-from pydantic import BaseModel, ConfigDict
-from typing import Optional
+import datetime
+from sqlalchemy import Column, Integer, String, DateTime, JSON, create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Optional, List, Dict
 from sqlalchemy.exc import SQLAlchemyError
+
 
 # Charger l'URL de la base de données depuis les variables d'environnement
 DB_URL = os.getenv('DATABASE_URL')
@@ -19,39 +19,70 @@ Base = declarative_base()
 class Objectif(Base):
     __tablename__ = "objectifs"
 
-    id = Column(Integer, primary_key = True, index = True)
-    habit_id = Column(Integer, nullable = False)
-    user_id = Column(Integer, nullable = False)
-    nom = Column(String, nullable = False)
-    coach_id = Column(Integer)
-    compteur = Column(Integer)
-    total = Column(Integer, nullable = False)
-    unite_compteur = Column(String, nullable = False)
-    statut = Column(Integer, nullable = False)
-    debut = Column(DateTime)
+    id = Column(Integer, primary_key=True, index=True)
+    habit_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, nullable=False)
+    nom = Column(String, nullable=False)  # Nom de l'objectif
+
+    compteur = Column(Integer, default=0)  # Progression actuelle
+    total = Column(Integer, nullable=False)  # Objectif final
+    unite_compteur = Column(String, nullable=False)  # Unité (ex: "pompes", "min")
+
+    statut = Column(Integer, nullable=False, default=1)  # 0 = en pause, 1 = actif
+    debut = Column(DateTime, nullable=True)  # Date de début de l'objectif
+    dernier_update = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+    # JSON pour stocker les modules interactifs activés 
+    modules = Column(JSON, default={})
+    """
+    Exemple :
+    {
+        "compteur": true,
+        "checkbox": false,
+        "chrono": true,
+        "rappel": true
+    }
+    """
+
+    # Stocker l'historique des progrès
+    historique_progression = Column(JSON, default=[])
+    """
+    Exemple :
+    [
+        {"date": "2024-03-01", "valeur": 10},  # 10 pompes faites le 1er mars
+        {"date": "2024-03-02", "valeur": 15},  # 15 pompes le 2 mars
+    ]
+    """
+
+    # Heure de rappel si "rappel" est activé
+    rappel_heure = Column(String, nullable=True)  # Format HH:MM
+
 
 class CreerObjectif(BaseModel):
-    id: int
     habit_id: int
     user_id: int
     nom: str
     statut: int
-    compteur: int
+    compteur: int = 0  # Valeur par défaut
     total: int
-    coach_id: int
     unite_compteur: str
+    modules: Dict[str, bool] = Field(default_factory=dict)  # Modules sélectionnés
+    rappel_heure: Optional[str] = None  # Heure de rappel
+    historique_progression: List[Dict[str, int]] = Field(default_factory=list)  # Historique des progrès
+
 
 class LireObjectif(BaseModel):
     id: int
     habit_id: Optional[int] = None
     user_id: Optional[int] = None
     nom: Optional[str] = None
-    coach_id: Optional[int] = None
     compteur: Optional[int] = None
     total: Optional[int] = None
     unite_compteur: Optional[str] = None
     statut: Optional[int] = None
-    debut: Optional[datetime] = None
+    debut: Optional[datetime.datetime] = None
+    modules: Dict[str, bool] = Field(default_factory=dict)  # Ajouté pour voir les modules
+    historique_progression: List[Dict[str, int]] = Field(default_factory=list)  # Ajouté pour suivre l'historique
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -59,15 +90,17 @@ class ModifierObjectif(BaseModel):
     id: int
     user_id: Optional[int] = None
     nom: Optional[str] = None
-    coach_id: Optional[int] = None
     compteur: Optional[int] = None
     total: Optional[int] = None
     unite_compteur: Optional[str] = None
     statut: Optional[int] = None
+    modules: Optional[Dict[str, bool]] = None  # Ajouté pour pouvoir modifier les modules
+    historique_progression: Optional[List[Dict[str, int]]] = None  # Modifier l'historique si besoin
 
 
 # Création des tables avec gestion des erreurs
 try:
     Base.metadata.create_all(engine)
+    print("Tables créées avec succès !")
 except SQLAlchemyError as e:
-    print(f"Erreur lors de la création des tables : {e}")
+    print(f"❌ Erreur lors de la création des tables : {e}")

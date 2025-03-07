@@ -81,11 +81,13 @@ def creer_objectif(
         user_id=utilisateur_db.id,
         nom=objectif_data.nom,
         statut=objectif_data.statut,
-        coach_id=objectif_data.coach_id,
         compteur=objectif_data.compteur,
         total=objectif_data.total,
         unite_compteur=objectif_data.unite_compteur,
-        debut=datetime.utcnow()
+        debut=datetime.utcnow(),
+        modules=objectif_data.modules,  # Ajout des modules interactifs
+        historique_progression=objectif_data.historique_progression,  # Historique des progrès
+        rappel_heure=objectif_data.rappel_heure  # Heure de rappel si activé
     )
 
     db.add(nouvel_objectif)
@@ -126,8 +128,12 @@ def modifier_objectif(
         objectif.unite_compteur = objectif_data.unite_compteur
     if objectif_data.total is not None:
         objectif.total = objectif_data.total
-    if objectif_data.coach_id is not None:
-        objectif.coach_id = objectif_data.coach_id
+    if objectif_data.modules is not None:
+        objectif.modules = objectif_data.modules
+    if objectif_data.historique_progression is not None:
+        objectif.historique_progression = objectif_data.historique_progression
+    if objectif_data.rappel_heure is not None:
+        objectif.rappel_heure = objectif_data.rappel_heure
 
     db.commit()
     logger.info(f"Objectif ID {objectif.id} mis à jour par l'utilisateur {utilisateur['id']}")
