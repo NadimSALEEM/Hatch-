@@ -30,6 +30,9 @@ flutter:
     - assets/images/coach_popup.png
     - assets/images/corbeille_suppression.png
     - assets/images/Habitude/habitCreated.png
+    - assets/images/Habitude/changeObjective.png
+    - assets/images/Habitude/deleteOk.png
+
   fonts:
     - family: BricolageGrotesqueBold
       fonts:

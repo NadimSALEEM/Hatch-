@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'creer_objectif.dart';
 
 class CreerHabitude extends StatefulWidget {
   const CreerHabitude({Key? key}) : super(key: key);
@@ -10,12 +11,13 @@ class CreerHabitude extends StatefulWidget {
 class _CreerHabitudeState extends State<CreerHabitude> {
   final TextEditingController _habitsNameController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
-  List<String> _tags = []; // Liste pour stocker les tags
+  final TextEditingController _objectiveNameController =TextEditingController();
+  final List<String> _tags = []; // Liste pour stocker les tags
   String _selectedPriority = "";
   //Variables création d'objectifs
   String? _selectedPeriod = "7";
   String? _selectedObjectiveType = "Chaque jour";
-  TextEditingController _objectiveNameController = TextEditingController();
+  final List<Map<String, String>> _objectifs = []; // Liste des objectifs
 
   // Ajouter un tag à la liste
   void _addTag() {
@@ -42,295 +44,54 @@ class _CreerHabitudeState extends State<CreerHabitude> {
     });
   }
 
-  void _submitObjective(BuildContext context) {
-    if (_objectiveNameController.text.isEmpty) {
-      // Afficher un message d'erreur si le champ est vide
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Veuillez entrer un nom d'objectif."),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } else {
-      //Enregistrer objectif
-      String objectiveName = _objectiveNameController.text;
-      String objectivePeriod = _selectedPeriod ?? "7";
-      String objectiveType = _selectedObjectiveType ?? "Chaque jour";
+  //Appel de la popup de création d'objectifs
+  void _showCreateObjectiveDialog() {
+    showCreateObjectiveDialog(
+      context,
+      _objectiveNameController,
+      _selectedPeriod,
+      _selectedObjectiveType,
+      (String name, String period, String type) {
+        setState(() {
+          // Ajouter l'objectif la liste
+          _addObjective(name, period, type);
+        });
 
-      // Réinitialisation des champs
-      _objectiveNameController.clear();
-      _selectedPeriod = "7";
-      _selectedObjectiveType = "Chaque jour";
-
-      Navigator.of(context).pop();
-    }
-  }
-
-  void _showCreateObjectiveDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Color(0xFF9381FF), width: 2),
-          ),
-          backgroundColor: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: StatefulBuilder(
-              builder: (context, setState) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Création d’un objectif',
-                          style: TextStyle(
-                            fontFamily: 'NunitoBold',
-                            fontSize: 18,
-                            color: Color(0xFF2F2F2F),
-                          ),
-                        ),
-                        IconButton(
-                          icon:
-                              const Icon(Icons.close, color: Color(0xFF2F2F2F)),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Nom de l'habitude (readonly)
-                    const Text(
-                      'Nom de l\'habitude',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'Nunito',
-                        color: Color(0xFF666666),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Color(0xFFEDEDED),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: TextField(
-                        controller: TextEditingController(
-                            text: _habitsNameController.text),
-                        style: const TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 14,
-                          color: Color(0xFF666666),
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        readOnly: true,
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // Nom de l'objectif
-                    const Text(
-                      'Nom de l\'objectif',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'Nunito',
-                        color: Color(0xFF666666),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Color(0xFFEDEDED)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: TextField(
-                        controller: _objectiveNameController,
-                        style: const TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 14,
-                          color: Color(0xFF666666),
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 10),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // Période
-                    const Text(
-                      'Période',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'Nunito',
-                        color: Color(0xFF666666),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: Color(0xFFEDEDED)),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: _selectedPeriod,
-                                isExpanded: true,
-                                items: [
-                                  "7",
-                                  "30",
-                                  "90",
-                                  "365",
-                                ].map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(
-                                      "$value ",
-                                      style: const TextStyle(
-                                        fontFamily: 'Nunito',
-                                        fontSize: 14,
-                                        color: Color(0xFF666666),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    _selectedPeriod =
-                                        newValue; // Mise à jour de la période sélectionnée
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Text(
-                          "jours",
-                          style: TextStyle(
-                            fontFamily: 'Nunito',
-                            fontSize: 14,
-                            color: Color(0xFF666666),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // Type d'objectif
-                    const Text(
-                      'Type d\'objectif',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'Nunito',
-                        color: Color(0xFF666666),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Color(0xFFEDEDED)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _selectedObjectiveType,
-                          isExpanded: true,
-                          items: [
-                            "Chaque jour",
-                            "Chaque semaine",
-                            "Chaque mois",
-                          ].map((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(
-                                value,
-                                style: const TextStyle(
-                                  fontFamily: 'Nunito',
-                                  fontSize: 14,
-                                  color: Color(0xFF666666),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              _selectedObjectiveType =
-                                  newValue; // Mise à jour du type d'objectif
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // Bouton Créer
-                    Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          _submitObjective(context);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          width: 200,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            'Créer',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontFamily: 'Nunito',
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        );
+        // Réinitialisation des champs après la création
+        _objectiveNameController.clear();
+        _selectedPeriod = "7";
+        _selectedObjectiveType = "Chaque jour";
       },
     );
   }
+
+  //Ajout d'objectif à la liste
+  void _addObjective(String name, String period, String type) {
+    setState(() {
+      _objectifs.add({
+        "nom": name,
+        "periode": period,
+        "type": type,
+      });
+    });
+  }
+
+  //Appel de la popup de modification d'objectifs
+  void _showEditObjectiveDialog(Map<String, String> objectif) {
+  showEditObjectiveDialog(
+    context,
+    objectif,
+    (updatedObjective) {
+      setState(() {
+        // Trouver l'objectif dans la liste et le mettre à jour
+        int index = _objectifs.indexOf(objectif);
+        if (index != -1) {
+          _objectifs[index] = updatedObjective;
+        }
+      });
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -458,6 +219,7 @@ class _CreerHabitudeState extends State<CreerHabitude> {
           ),
         ),
         const SizedBox(height: 12),
+        //Bouton ajouter objectif
         Container(
           width: MediaQuery.of(context).size.width * 0.4,
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -471,7 +233,7 @@ class _CreerHabitudeState extends State<CreerHabitude> {
           ),
           child: TextButton(
             onPressed: () {
-              _showCreateObjectiveDialog(context);
+              _showCreateObjectiveDialog();
             },
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 18),
@@ -494,6 +256,96 @@ class _CreerHabitudeState extends State<CreerHabitude> {
             ),
           ),
         ),
+         const SizedBox(height: 10),
+        // Affichage de la liste des objectifs
+        _objectifs.isEmpty
+            ? const Text(
+                "Aucun objectif ajouté",
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              )
+            : Column(
+                children: _objectifs.map((objectif) {
+                  int currentDay =1; 
+                  int totalDays = int.parse(objectif["periode"] ??"7"); // Période en jours, 7 par défaut
+                  double progress = currentDay / totalDays;
+
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    color: Color(0xFFE3FFE5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Nom de l'objectif
+                          Text(
+                            objectif["nom"]!,
+                            style: const TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF333333),
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+
+                          Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.grey.shade300,
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFB9ADFF)),
+                          minHeight: 6,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Image.asset(
+                          'assets/images/Habitude/changeObjective.png',
+                          width: 38,
+                          height: 38,
+                        ),
+                        onPressed: () {
+                          _showEditObjectiveDialog(objectif);
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+
+                          // Affichage de la période et du type d'objectif
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "$currentDay/${objectif["periode"]} jours",
+                                style: const TextStyle(
+                                  fontFamily: 'Nunito',
+                                  fontSize: 12,
+                                  color: Color(0xFFB8B8FF),
+                                ),
+                              ),
+
+                              Text(
+                                objectif["type"]!,
+                                style: const TextStyle(
+                                  fontFamily: 'Nunito',
+                                  fontSize: 12,
+                                  color: Color(0xFFB8B8FF),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
       ],
     );
   }

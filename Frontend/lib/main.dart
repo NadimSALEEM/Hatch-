@@ -28,7 +28,7 @@ class MainApp extends StatelessWidget {
         '/parametres_compte': (context) => AuthGuard(page: ParametresCompte()),
         '/profil': (context) => AuthGuard(page: Profil()),
         '/questionnaire': (context) => AuthGuard(page: Questionnaire()),
-        '/creer_objectif': (context) => AuthGuard(page: CreerObjectif()),
+        //'/creer_objectif': (context) => AuthGuard(page: CreerObjectif()),
         '/creer_une_habitude': (context) => AuthGuard(page: CreerHabitude()),
 
         '/habitude': (context) {
