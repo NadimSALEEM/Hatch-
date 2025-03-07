@@ -27,12 +27,14 @@ class _HabitudeState extends State<Habitude> {
   ];
 
   late String dragonName;
+  List<dynamic> _objectifs = [];
 
   @override
   void initState() {
     super.initState();
     dragonName = (dragonNames..shuffle()).first;
     fetchHabitDetails();
+    fetchObjectives();
   }
 
   Future<void> fetchHabitDetails() async {
@@ -54,6 +56,28 @@ class _HabitudeState extends State<Habitude> {
       print("Erreur lors du chargement de l’habitude : $e");
     }
   }  
+
+
+  Future<void> fetchObjectives() async {
+    try {
+      String? token = await _secureStorage.read(key: "jwt_token");
+      if (token == null) return;
+
+      final response = await _dio.get(
+        "http://localhost:8080/objectifs/${widget.habitId}",
+        options: Options(headers: {"Authorization": "Bearer $token"}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _objectifs = response.data;
+        });
+      }
+    } catch (e) {
+      print("Erreur lors du chargement des objectifs : $e");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +332,7 @@ Widget _buildNotesSection() {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Description',
+            'Notes',
             style: TextStyle(
               fontSize: 18,
               fontFamily: 'NunitoBold',
@@ -481,14 +505,14 @@ Widget _buildObjectivesSection() {
                 ),
               ),
               GestureDetector(
-                onTap: () {},
+                onTap: () {}, // Ajouter une action si nécessaire
                 child: Row(
                   children: [
                     Text(
                       'Tout',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFAB96FF)),
                     ),
-                    SizedBox(width: 4), // Ajoute un petit espace
+                    SizedBox(width: 4), // Espacement
                     Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFFAB96FF)),
                   ],
                 ),
@@ -496,73 +520,81 @@ Widget _buildObjectivesSection() {
             ],
           ),
           const SizedBox(height: 10),
-          Column(
-            children: List.generate(3, (index) {
-              double progressValue = 0.3 + (index * 0.2);
-              return Container(
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Color(0xFFF3F2FF),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Objectif ${index + 1}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontFamily: 'NunitoBold',
-                            color: Color(0xFF2F2F2F),
+
+          _objectifs.isEmpty
+              ? Center(
+                  child: Text(
+                    "Aucun objectif défini.",
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                )
+              : Column(
+                  children: _objectifs.map((objectif) {
+                    double progressValue = objectif["compteur"] / objectif["total"];
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFF3F2FF),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                objectif["nom"],
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontFamily: 'NunitoBold',
+                                  color: Color(0xFF2F2F2F),
+                                ),
+                              ),
+                              Icon(
+                                Icons.edit,
+                                color: Color(0xFF9381FF),
+                              ),
+                            ],
                           ),
-                        ),
-                        Icon(
-                          Icons.edit,
-                          color: Color(0xFF9381FF),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: progressValue,
-                      backgroundColor: Colors.grey.shade300,
-                      color: Color(0xFF9381FF),
-                      minHeight: 8,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${(index + 1) * 5} / 30 Jours',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontFamily: 'Nunito',
-                            color: Color(0xFF2F2F2F),
-                          ),
-                        ),
-                        Text(
-                          'Tous les jours',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontFamily: 'NunitoBold',
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            value: progressValue,
+                            backgroundColor: Colors.grey.shade300,
                             color: Color(0xFF9381FF),
+                            minHeight: 8,
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${objectif["compteur"]} / ${objectif["total"]} ${objectif["unite_compteur"]}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontFamily: 'Nunito',
+                                  color: Color(0xFF2F2F2F),
+                                ),
+                              ),
+                              Text(
+                                objectif["statut"] == 1 ? 'Actif' : 'En pause',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontFamily: 'NunitoBold',
+                                  color: objectif["statut"] == 1 ? Colors.green : Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }),
-          ),
           const SizedBox(height: 10),
-          // Bouton avec LinearGradient
+          // Bouton Ajouter un Objectif
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -572,7 +604,9 @@ Widget _buildObjectivesSection() {
               ),
             ),
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pushNamed(context, '/ajouter_objectif', arguments: {'habitId': widget.habitId});
+              },
               icon: const Icon(Icons.add, color: Colors.white),
               label: const Text(
                 'Ajouter un objectif',
@@ -595,6 +629,7 @@ Widget _buildObjectivesSection() {
     ),
   );
 }
+
 
 
 

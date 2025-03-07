@@ -1,23 +1,23 @@
 meta {
   name: Update Objectif
   type: http
-  seq: 3
+  seq: 4
 }
 
 put {
-  url: http://localhost:8080/objectifs/edit
+  url: http://localhost:8080/habits/1/objectifs/1/edit
   body: json
   auth: none
 }
 
 headers {
-  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MTEzNTU5M30.Bs3BF-SHHkvTHEHjfRKX5a-LoOGC5yaVlbgvrZEO_1k
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MTM3Mjg2M30.a4u0B5g2QUuy9kW2mlFHXeWcy21zCz0_-svOUyufzb4
 }
 
 body:json {
   {
     "id": 1,
-    "nom": "Courir 20km",
+    "nom": "Courir 20ssskm",
     "statut": 2,
     "compteur": 10,
     "unite_compteur": "km",
