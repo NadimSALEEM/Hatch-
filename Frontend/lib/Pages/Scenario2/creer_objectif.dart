@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 //Popup de création d'objectif
 void showCreateObjectiveDialog(
-    BuildContext context, //affichage popup
-    TextEditingController objectiveNameController, //nom de l'objectif
-    String? selectedPeriod, //période choisie
-    String? selectedObjectiveType, //type d'objectif choisi
-    Function(String, String, String) onObjectiveCreated) {
+  BuildContext context, //affichage popup
+  TextEditingController objectiveNameController, //nom de l'objectif
+  String? selectedPeriod, //période choisie
+  String? selectedObjectiveType, //type d'objectif choisi
+  Function(String, String, String) onObjectiveCreated,
+  String habitName,
+) {
   //fonction appelée quand on valide l'objectif
   showDialog(
     context: context,
@@ -45,6 +47,40 @@ void showCreateObjectiveDialog(
                     ],
                   ),
                   const SizedBox(height: 10),
+
+                  // Nom de l'habitude (readonly)
+                  const Text(
+                    'Nom de l\'habitude',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Nunito',
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Color(0xFFEDEDED),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: TextField(
+                      controller: TextEditingController(text: habitName),
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 14,
+                        color: Color(0xFF666666),
+                      ),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      readOnly: true,
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
 
                   // Nom de l'objectif
                   const Text(
@@ -173,8 +209,13 @@ void showCreateObjectiveDialog(
 }
 
 //Popup de modification d'objectif
-void showEditObjectiveDialog(BuildContext context, Map<String, String> objectif,
-    Function(Map<String, String>) onObjectiveUpdated) {
+void showEditObjectiveDialog(
+  BuildContext context,
+  Map<String, String> objectif,
+  Function(Map<String, String>) onObjectiveUpdated,
+  Function onObjectiveDeleted,
+  String habitName,
+) {
   TextEditingController objectiveNameController =
       TextEditingController(text: objectif["nom"]);
   String? selectedPeriod = objectif["periode"];
@@ -217,6 +258,40 @@ void showEditObjectiveDialog(BuildContext context, Map<String, String> objectif,
                     ],
                   ),
                   const SizedBox(height: 10),
+
+                  // Nom de l'habitude (readonly)
+                  const Text(
+                    'Nom de l\'habitude',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Nunito',
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Color(0xFFEDEDED),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: TextField(
+                      controller: TextEditingController(text: habitName),
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 14,
+                        color: Color(0xFF666666),
+                      ),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      readOnly: true,
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
 
                   // Nom de l'objectif
                   const Text(
@@ -335,8 +410,9 @@ void showEditObjectiveDialog(BuildContext context, Map<String, String> objectif,
                   Center(
                     child: TextButton(
                       onPressed: () {
-                        _showDeleteConfirmationDialog(
-                            context, onObjectiveDeleted);
+                        _showDeleteConfirmationDialog(context, () {
+                          onObjectiveDeleted(); // Appelle la suppression depuis creerhabitude.dart
+                        });
                       },
                       child: const Text(
                         "Supprimer l'objectif",
@@ -404,7 +480,9 @@ void _showDeleteConfirmationDialog(
               child: TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  onObjectiveDeleted(context);
+                  Navigator.of(context).pop();
+                  onObjectiveDeleted();
+                  _showDeleteSuccessDialog(context);
                 },
                 child: const Text(
                   "Supprimer",

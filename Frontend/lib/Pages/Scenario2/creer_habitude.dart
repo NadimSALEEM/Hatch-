@@ -11,7 +11,8 @@ class CreerHabitude extends StatefulWidget {
 class _CreerHabitudeState extends State<CreerHabitude> {
   final TextEditingController _habitsNameController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
-  final TextEditingController _objectiveNameController =TextEditingController();
+  final TextEditingController _objectiveNameController =
+      TextEditingController();
   final List<String> _tags = []; // Liste pour stocker les tags
   String _selectedPriority = "";
   //Variables création d'objectifs
@@ -62,6 +63,7 @@ class _CreerHabitudeState extends State<CreerHabitude> {
         _selectedPeriod = "7";
         _selectedObjectiveType = "Chaque jour";
       },
+      _habitsNameController.text,
     );
   }
 
@@ -78,20 +80,25 @@ class _CreerHabitudeState extends State<CreerHabitude> {
 
   //Appel de la popup de modification d'objectifs
   void _showEditObjectiveDialog(Map<String, String> objectif) {
-  showEditObjectiveDialog(
-    context,
-    objectif,
-    (updatedObjective) {
-      setState(() {
-        // Trouver l'objectif dans la liste et le mettre à jour
-        int index = _objectifs.indexOf(objectif);
-        if (index != -1) {
-          _objectifs[index] = updatedObjective;
-        }
-      });
-    },
-  );
-}
+    showEditObjectiveDialog(
+      context,
+      objectif,
+      (updatedObjective) {
+        setState(() {
+          int index = _objectifs.indexOf(objectif);
+          if (index != -1) {
+            _objectifs[index] = updatedObjective;
+          }
+        });
+      },
+      () {
+        setState(() {
+          _objectifs.remove(objectif); // Supprime l'objectif de la liste
+        });
+      },
+      _habitsNameController.text,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -256,7 +263,7 @@ class _CreerHabitudeState extends State<CreerHabitude> {
             ),
           ),
         ),
-         const SizedBox(height: 10),
+        const SizedBox(height: 10),
         // Affichage de la liste des objectifs
         _objectifs.isEmpty
             ? const Text(
@@ -265,8 +272,9 @@ class _CreerHabitudeState extends State<CreerHabitude> {
               )
             : Column(
                 children: _objectifs.map((objectif) {
-                  int currentDay =1; 
-                  int totalDays = int.parse(objectif["periode"] ??"7"); // Période en jours, 7 par défaut
+                  int currentDay = 1;
+                  int totalDays = int.parse(objectif["periode"] ??
+                      "7"); // Période en jours, 7 par défaut
                   double progress = currentDay / totalDays;
 
                   return Card(
@@ -293,29 +301,31 @@ class _CreerHabitudeState extends State<CreerHabitude> {
                           const SizedBox(height: 3),
 
                           Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          backgroundColor: Colors.grey.shade300,
-                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFB9ADFF)),
-                          minHeight: 6,
-                        ),
-                      ),
-                      IconButton(
-                        icon: Image.asset(
-                          'assets/images/Habitude/changeObjective.png',
-                          width: 38,
-                          height: 38,
-                        ),
-                        onPressed: () {
-                          _showEditObjectiveDialog(objectif);
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 3),
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: LinearProgressIndicator(
+                                  value: progress,
+                                  backgroundColor: Colors.grey.shade300,
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(
+                                          Color(0xFFB9ADFF)),
+                                  minHeight: 6,
+                                ),
+                              ),
+                              IconButton(
+                                icon: Image.asset(
+                                  'assets/images/Habitude/changeObjective.png',
+                                  width: 38,
+                                  height: 38,
+                                ),
+                                onPressed: () {
+                                  _showEditObjectiveDialog(objectif);
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
 
                           // Affichage de la période et du type d'objectif
                           Row(
@@ -329,7 +339,6 @@ class _CreerHabitudeState extends State<CreerHabitude> {
                                   color: Color(0xFFB8B8FF),
                                 ),
                               ),
-
                               Text(
                                 objectif["type"]!,
                                 style: const TextStyle(
