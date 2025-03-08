@@ -5,26 +5,20 @@ meta {
 }
 
 put {
-  url: http://localhost:8080/habits/1/objectifs/1/edit
+  url: http://localhost:8080/habits/1/objectifs/3/edit
   body: json
   auth: none
 }
 
 headers {
-  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MTM3Mjg2M30.a4u0B5g2QUuy9kW2mlFHXeWcy21zCz0_-svOUyufzb4
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MTM3ODIyMX0.KaW0J1Zy1GCNCWo3rf2aA4Tnd6KkNAOQUSFMjm5XoLM
 }
 
 body:json {
     {
-      "id": 2,
+      "id": 3,
       "habit_id": 1,
       "user_id": 1,
-      "nom": "Courir 5km",
-      "coach_id": 2,
-      "compteur": 0,
-      "total": 30,
-      "unite_compteur": "km",
-      "statut": 0,
-      "debut": "2025-03-07T18:22:57.348812"
+      "statut": 1
     }
 }

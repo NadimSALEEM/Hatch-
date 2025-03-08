@@ -7,6 +7,7 @@ from app.models.habit import Habitude, LireHabitude, ModifierHabitude, CreerHabi
 from typing import List
 from app.models.user import Utilisateur
 from app.routers.auth import get_current_user
+from app.models.objectif import Objectif
 from uuid import uuid4
 from datetime import datetime
 
@@ -148,3 +149,72 @@ def supprimer_habitude(
     db.commit()
 
     return {"message": "Habitude supprimée avec succès"}
+
+@router.get("/{habitude_id}/stats")
+def get_progress_stats(
+    habitude_id: int,
+    utilisateur: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Récupère les statistiques de progression pour une habitude spécifique de l'utilisateur.
+    """
+    today = datetime.utcnow().date()
+    streak = 0
+    jours_parfaits = 0
+    objectifs_completes = 0
+    total_progress = 0
+    total_objectifs = 0
+
+    # Récupérer les objectifs de l'utilisateur pour cette habitude
+    objectifs = db.query(Objectif).filter(
+        Objectif.habit_id == habitude_id,
+        Objectif.user_id == utilisateur["id"]
+    ).all()
+
+    if not objectifs:
+        raise HTTPException(status_code=404, detail="Aucun objectif trouvé pour cette habitude")
+
+    # Stocker les progrès par jour
+    progress_par_jour = {}
+
+    for obj in objectifs:
+        if obj.compteur >= obj.total:
+            objectifs_completes += 1  # Objectifs totalement complétés
+
+        total_progress += obj.compteur
+        total_objectifs += obj.total
+
+        # Parcourir l'historique des progrès
+        for record in obj.historique_progression or []:
+            jour = record["date"]
+            valeur = record["valeur"]
+
+            # Ajouter la valeur au jour correspondant
+            if jour not in progress_par_jour:
+                progress_par_jour[jour] = []
+            progress_par_jour[jour].append(valeur)
+
+    # 🔥 Calcul des streaks (jours consécutifs avec au moins un objectif réussi)
+    sorted_days = sorted(progress_par_jour.keys(), reverse=True)
+    for i, day in enumerate(sorted_days):
+        if i == 0 or sorted_days[i - 1] == (datetime.strptime(day, "%Y-%m-%d").date() + timedelta(days=1)):
+            streak += 1
+        else:
+            break  # La chaîne s'arrête si un jour est manqué
+
+    # 🌟 Calcul des jours parfaits (tous les objectifs d'un jour réussis)
+    for day, values in progress_par_jour.items():
+        if sum(values) >= total_objectifs:
+            jours_parfaits += 1
+
+    # 📈 Calcul du % d'avancement global
+    avancement = (total_progress / total_objectifs) * 100 if total_objectifs > 0 else 0
+
+    return {
+        "streak": streak,
+        "avancement": round(avancement, 1),
+        "objectifs_completes": objectifs_completes,
+        "jours_parfaits": jours_parfaits
+    }
+
