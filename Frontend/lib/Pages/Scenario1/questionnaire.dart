@@ -363,17 +363,6 @@ class _QuestionnaireState extends State<Questionnaire> {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: "BricolageGrotesqueBold",
-              fontSize: 18,
-            ),
-          ),
-        ),
         Expanded(child: _buildQuestionsSection(sectionNumber - 1)),
         if (_showError) //Message d'erreur si on ne répond pas à toutes les affirmations
           Padding(
