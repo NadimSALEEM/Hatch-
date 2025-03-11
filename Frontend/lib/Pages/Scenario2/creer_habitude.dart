@@ -18,7 +18,7 @@ class _CreerHabitudeState extends State<CreerHabitude> {
   //Variables création d'objectifs
   String? _selectedPeriod = "7";
   String? _selectedObjectiveType = "Chaque jour";
-  final List<Map<String, String>> _objectifs = []; // Liste des objectifs
+  final List<Map<String, dynamic>> _objectifs = []; // Liste des objectifs
 
   // Ajouter un tag à la liste
   void _addTag() {
@@ -52,10 +52,10 @@ class _CreerHabitudeState extends State<CreerHabitude> {
       _objectiveNameController,
       _selectedPeriod,
       _selectedObjectiveType,
-      (String name, String period, String type) {
+      (String name, String period, String type, Map<String, bool> modules) {
         setState(() {
           // Ajouter l'objectif la liste
-          _addObjective(name, period, type);
+          _addObjective(name, period, type, modules);
         });
 
         // Réinitialisation des champs après la création
@@ -68,18 +68,19 @@ class _CreerHabitudeState extends State<CreerHabitude> {
   }
 
   //Ajout d'objectif à la liste
-  void _addObjective(String name, String period, String type) {
+  void _addObjective(String name, String period, String type, Map<String, bool> modules) {
     setState(() {
       _objectifs.add({
         "nom": name,
         "periode": period,
         "type": type,
+        "modules": modules,
       });
     });
   }
 
   //Appel de la popup de modification d'objectifs
-  void _showEditObjectiveDialog(Map<String, String> objectif) {
+  void _showEditObjectiveDialog(Map<String, dynamic> objectif) {
     showEditObjectiveDialog(
       context,
       objectif,
