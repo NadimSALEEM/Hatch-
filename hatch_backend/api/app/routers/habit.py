@@ -87,7 +87,7 @@ def creer_habitude(
         db.add(nouvelle_habitude)
         db.commit()
         db.refresh(nouvelle_habitude)
-        return nouvelle_habitude  # Retourne l'habitude créée avec son ID
+        return nouvelle_habitude
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erreur serveur: {str(e)}")

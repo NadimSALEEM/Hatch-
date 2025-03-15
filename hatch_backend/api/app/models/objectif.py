@@ -103,4 +103,4 @@ try:
     Base.metadata.create_all(engine)
     print("Tables créées avec succès !")
 except SQLAlchemyError as e:
-    print(f"❌ Erreur lors de la création des tables : {e}")
+    print(f"Erreur lors de la création des tables : {e}")
