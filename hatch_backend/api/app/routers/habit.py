@@ -64,14 +64,15 @@ def creer_habitude(
     db: Session = Depends(get_db)
 ):
     """
-    Crée une nouvelle habitude pour l'utilisateur connecté.
+    Crée une nouvelle habitude pour l'utilisateur connecté sans besoin d'envoyer l'ID.
     """
-    utilisateur_db = db.query(Utilisateur).filter(Utilisateur.email == utilisateur["email"]).first()
-    if not utilisateur_db:
-        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    user_id = utilisateur.get("id")  # Récupérer l'ID utilisateur depuis le token
+    
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Utilisateur non authentifié")
 
     nouvelle_habitude = Habitude(
-        user_id=utilisateur_db.id,
+        user_id=user_id,
         nom=habitude_data.nom,
         desc=habitude_data.desc,
         statut=habitude_data.statut,
@@ -82,11 +83,15 @@ def creer_habitude(
         maj_le=datetime.utcnow()
     )
 
-    db.add(nouvelle_habitude)
-    db.commit()
-    db.refresh(nouvelle_habitude)
+    try:
+        db.add(nouvelle_habitude)
+        db.commit()
+        db.refresh(nouvelle_habitude)
+        return nouvelle_habitude  # Retourne l'habitude créée avec son ID
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erreur serveur: {str(e)}")
 
-    return nouvelle_habitude
 
 
 @router.put("/{habitude_id}/edit")
@@ -195,7 +200,7 @@ def get_progress_stats(
                 progress_par_jour[jour] = []
             progress_par_jour[jour].append(valeur)
 
-    # 🔥 Calcul des streaks (jours consécutifs avec au moins un objectif réussi)
+    # Calcul des streaks (jours consécutifs avec au moins un objectif réussi)
     sorted_days = sorted(progress_par_jour.keys(), reverse=True)
     for i, day in enumerate(sorted_days):
         if i == 0 or sorted_days[i - 1] == (datetime.strptime(day, "%Y-%m-%d").date() + timedelta(days=1)):
@@ -203,12 +208,12 @@ def get_progress_stats(
         else:
             break  # La chaîne s'arrête si un jour est manqué
 
-    # 🌟 Calcul des jours parfaits (tous les objectifs d'un jour réussis)
+    # Calcul des jours parfaits (tous les objectifs d'un jour réussis)
     for day, values in progress_par_jour.items():
         if sum(values) >= total_objectifs:
             jours_parfaits += 1
 
-    # 📈 Calcul du % d'avancement global
+    # Calcul du % d'avancement global
     avancement = (total_progress / total_objectifs) * 100 if total_objectifs > 0 else 0
 
     return {

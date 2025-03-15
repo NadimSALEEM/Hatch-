@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'creer_objectif.dart';
 
 class CreerHabitude extends StatefulWidget {
@@ -11,14 +13,15 @@ class CreerHabitude extends StatefulWidget {
 class _CreerHabitudeState extends State<CreerHabitude> {
   final TextEditingController _habitsNameController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
-  final TextEditingController _objectiveNameController =
-      TextEditingController();
-  final List<String> _tags = []; // Liste pour stocker les tags
-  String _selectedPriority = "";
-  //Variables création d'objectifs
+  final TextEditingController _objectiveNameController = TextEditingController();
+  final List<String> _tags = [];
+  String _selectedPriority = "moyenne";
   String? _selectedPeriod = "7";
   String? _selectedObjectiveType = "Chaque jour";
-  final List<Map<String, dynamic>> _objectifs = []; // Liste des objectifs
+  final List<Map<String, dynamic>> _objectifs = [];
+  final Dio _dio = Dio();
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  bool _isLoading = false;
 
   // Ajouter un tag à la liste
   void _addTag() {

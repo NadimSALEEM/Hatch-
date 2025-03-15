@@ -34,14 +34,12 @@ class Habitude(Base):
 class CreerHabitude(BaseModel):
     nom: str
     statut: int
-    user_id: int
     freq: Optional[str] = None
     prio: Optional[Literal["haute", "moyenne", "basse"]] = None
     desc: Optional[str] = None
     labels: Optional[List[str]] = None
 
 class ModifierHabitude(BaseModel):
-    id: int
     nom: Optional[str] = None
     desc: Optional[str] = None
     statut: Optional[int] = None
@@ -50,7 +48,7 @@ class ModifierHabitude(BaseModel):
     labels: Optional[List[str]] = None
 
 class LireHabitude(BaseModel):
-    id: int
+    id: Optional[int] = None
     user_id: Optional[int] = None
     nom: Optional[str] = None
     desc: Optional[str] = None
