@@ -83,6 +83,51 @@ Future<void> fetchObjectives() async {
   }
 }
 
+Future<void> _addObjectiveToAPI(Map<String, dynamic> objectif) async {
+  try {
+    String? token = await _secureStorage.read(key: "jwt_token");
+    if (token == null) {
+      print("Erreur : Token JWT non trouvé.");
+      return;
+    }
+
+    if (habitDetails == null || habitDetails?["user_id"] == null) {
+      print("Erreur : Détails de l'habitude non trouvés.");
+      return;
+    }
+
+    int habitId = widget.habitId;
+    int userId = habitDetails!["user_id"];
+
+    final response = await _dio.post(
+      "http://localhost:8080/habits/$habitId/objectifs/create",
+      data: {
+        "habit_id": habitId,
+        "user_id": userId,
+        "nom": objectif["nom"],
+        "statut": 1,
+        "compteur": 0,
+        "total": 100,
+        "unite_compteur": "fois",
+        "modules": objectif["modules"],
+        "rappel_heure": null,
+        "historique_progression": [],
+      },
+      options: Options(headers: {"Authorization": "Bearer $token"}),
+    );
+
+    if (response.statusCode == 201) {
+      print("Objectif ajouté avec succès : ${response.data}");
+      fetchObjectives(); // Met à jour la liste des objectifs
+    } else {
+      print("Erreur HTTP ${response.statusCode} : ${response.data}");
+    }
+  } catch (e) {
+    print("Erreur lors de l'ajout de l'objectif : $e");
+  }
+}
+
+
 
 
   @override
@@ -489,9 +534,6 @@ Widget _buildProgressSection() {
 
 
 Widget _buildObjectivesSection() {
-  // Filtrer uniquement les objectifs actifs
-  List<dynamic> objectifsActifs = _objectifs.where((objectif) => objectif["statut"] == 1).toList();
-
   return Card(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     elevation: 4,
@@ -507,11 +549,7 @@ Widget _buildObjectivesSection() {
             children: [
               const Text(
                 'Objectifs',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontFamily: 'NunitoBold',
-                  color: Color(0xFF2F2F2F),
-                ),
+                style: TextStyle(fontSize: 18, fontFamily: 'NunitoBold', color: Color(0xFF2F2F2F)),
               ),
               GestureDetector(
                 onTap: () {
@@ -532,35 +570,18 @@ Widget _buildObjectivesSection() {
           ),
           const SizedBox(height: 10),
 
-          objectifsActifs.isEmpty
-              ? Column(
-                  children: [
-                    Center(
-                      child: Text(
-                        "Aucun objectif actif pour l'instant.",
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Center(
-                      child: Text(
-                        "Si vous voulez voir les objectifs en pause, cliquez sur 'Tout'.",
-                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
+          // Liste des objectifs (s'ils existent)
+          _objectifs.isEmpty
+              ? Center(
+                  child: Text("Aucun objectif pour l'instant.", style: TextStyle(fontSize: 16, color: Colors.grey)),
                 )
               : Column(
-                  children: objectifsActifs.map((objectif) {
+                  children: _objectifs.map((objectif) {
                     double progressValue = objectif["compteur"] / objectif["total"];
                     return Container(
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF3F2FF),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      decoration: BoxDecoration(color: Color(0xFFF3F2FF), borderRadius: BorderRadius.circular(12)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -569,16 +590,9 @@ Widget _buildObjectivesSection() {
                             children: [
                               Text(
                                 objectif["nom"],
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontFamily: 'NunitoBold',
-                                  color: Color(0xFF2F2F2F),
-                                ),
+                                style: const TextStyle(fontSize: 16, fontFamily: 'NunitoBold', color: Color(0xFF2F2F2F)),
                               ),
-                              Icon(
-                                Icons.edit,
-                                color: Color(0xFF9381FF),
-                              ),
+                              Icon(Icons.edit, color: Color(0xFF9381FF)),
                             ],
                           ),
                           const SizedBox(height: 8),
@@ -587,28 +601,14 @@ Widget _buildObjectivesSection() {
                             backgroundColor: Colors.grey.shade300,
                             color: Color(0xFF9381FF),
                             minHeight: 8,
-                            borderRadius: BorderRadius.circular(4),
                           ),
                           const SizedBox(height: 6),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                '${objectif["compteur"]} / ${objectif["total"]} ${objectif["unite_compteur"]}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontFamily: 'Nunito',
-                                  color: Color(0xFF2F2F2F),
-                                ),
-                              ),
-                              Text(
-                                'Actif',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily: 'NunitoBold',
-                                  color: Colors.green,
-                                ),
-                              ),
+                              Text('${objectif["compteur"]} / ${objectif["total"]} ${objectif["unite_compteur"]}',
+                                  style: const TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF2F2F2F))),
+                              Text('Actif', style: TextStyle(fontSize: 14, fontFamily: 'NunitoBold', color: Colors.green)),
                             ],
                           ),
                         ],
@@ -617,28 +617,25 @@ Widget _buildObjectivesSection() {
                   }).toList(),
                 ),
           const SizedBox(height: 10),
+
           // Bouton Ajouter un Objectif
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              gradient: const LinearGradient(
-                colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)],
-              ),
+              gradient: const LinearGradient(colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)]),
             ),
             child: ElevatedButton.icon(
               onPressed: () {
-                Navigator.pushNamed(context, '/creer_objectif');
+                showCreateObjectiveDialog(
+                    context: context,
+                    habitId: widget.habitId,
+                    addObjectiveToAPI: _addObjectiveToAPI,
+                  );
               },
               icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text(
-                'Ajouter un objectif',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontFamily: 'NunitoBold',
-                  color: Colors.white,
-                ),
-              ),
+              label: const Text('Ajouter un objectif',
+                  style: TextStyle(fontSize: 16, fontFamily: 'NunitoBold', color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -653,8 +650,237 @@ Widget _buildObjectivesSection() {
   );
 }
 
+void showCreateObjectiveDialog({
+  required BuildContext context,
+  required int habitId,
+  required Future<void> Function(Map<String, dynamic>) addObjectiveToAPI,
+}) {
+  final TextEditingController objectiveNameController = TextEditingController();
+  String selectedPeriod = "7";
+  String selectedObjectiveType = "Chaque jour";
+  Map<String, bool> selectedModules = {
+    "counter": false,
+    "chrono": false,
+    "reminder": false,
+    "checkbox": false
+  };
 
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFF9381FF), width: 2),
+        ),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 🟣 Titre et bouton fermer
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Nouvel Objectif',
+                          style: TextStyle(
+                            fontFamily: 'NunitoBold',
+                            fontSize: 18,
+                            color: Color(0xFF2F2F2F),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Color(0xFF2F2F2F)),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
 
+                    // 🟣 Nom de l'objectif
+                    const Text(
+                      'Nom de l\'objectif',
+                      style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: objectiveNameController,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Color(0xFFEDEDED)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 🟣 Sélection Période et Type d'Objectif
+                    const Text(
+                      'Période',
+                      style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(height: 10),
+                    DropdownButton<String>(
+                      value: selectedPeriod,
+                      isExpanded: true,
+                      items: ["7", "30", "90", "365"].map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text("$value jours"),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() => selectedPeriod = newValue!);
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    const Text(
+                      'Type d\'objectif',
+                      style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(height: 10),
+                    DropdownButton<String>(
+                      value: selectedObjectiveType,
+                      isExpanded: true,
+                      items: ["Chaque jour", "Chaque semaine", "Chaque mois"].map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() => selectedObjectiveType = newValue!);
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 🟣 Sélection des modules
+                    const Text(
+                      'Modules',
+                      style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(height: 10),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CheckboxListTile(
+                            title: const Text("Compteur", style: TextStyle(fontSize: 12, fontFamily: 'Nunito')),
+                            value: selectedModules["counter"],
+                            onChanged: (bool? value) {
+                              setState(() => selectedModules["counter"] = value!);
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        Expanded(
+                          child: CheckboxListTile(
+                            title: const Text("Chrono", style: TextStyle(fontSize: 12, fontFamily: 'Nunito')),
+                            value: selectedModules["chrono"],
+                            onChanged: (bool? value) {
+                              setState(() => selectedModules["chrono"] = value!);
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CheckboxListTile(
+                            title: const Text("Rappel", style: TextStyle(fontSize: 12, fontFamily: 'Nunito')),
+                            value: selectedModules["reminder"],
+                            onChanged: (bool? value) {
+                              setState(() => selectedModules["reminder"] = value!);
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        Expanded(
+                          child: CheckboxListTile(
+                            title: const Text("Checkbox", style: TextStyle(fontSize: 12, fontFamily: 'Nunito')),
+                            value: selectedModules["checkbox"],
+                            onChanged: (bool? value) {
+                              setState(() => selectedModules["checkbox"] = value!);
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // 🟣 Bouton Ajouter
+                    Center(
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.6,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: TextButton(
+                          onPressed: () async {
+                            if (objectiveNameController.text.isNotEmpty) {
+                              Map<String, dynamic> nouvelObjectif = {
+                                "nom": objectiveNameController.text,
+                                "periode": selectedPeriod,
+                                "type": selectedObjectiveType,
+                                "modules": selectedModules,
+                              };
+
+                              await addObjectiveToAPI(nouvelObjectif);
+                              Navigator.of(context).pop();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Veuillez entrer un nom d'objectif."),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text(
+                            "Ajouter l'objectif",
+                            style: TextStyle(fontFamily: 'NunitoBold', fontSize: 14, color: Color(0xFFFBFBFB)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    },
+  );
+}
 
 
   Widget _buildResourcesSection() {
