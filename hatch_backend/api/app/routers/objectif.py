@@ -194,7 +194,7 @@ def ajouter_progression(
     if not objectif:
         raise HTTPException(status_code=404, detail="Objectif non trouvé ou accès interdit")
 
-    # 🔍 Récupérer les modules activés
+    # Récupérer les modules activés
     modules_activés = [key for key, value in objectif.modules.items() if value]
     nombre_modules = len(modules_activés)
 
@@ -213,12 +213,12 @@ def ajouter_progression(
     chrono_value = progression_data.get("chrono", 0)
     rappel_value = progression_data.get("rappel", None)
 
-    # ✅ Mise à jour des valeurs dans l'objectif
+    # Mise à jour des valeurs dans l'objectif
     if compteur_value:
         objectif.compteur += compteur_value
 
     if isinstance(checkbox_value, bool) and checkbox_value:
-        objectif.score_global = 100  # ✅ Si checkbox cochée, objectif terminé à 100%
+        objectif.score_global = 100  # Si checkbox cochée, objectif terminé à 100%
 
     if chrono_value:
         objectif.compteur += chrono_value  # Ajoute le temps passé en minutes
@@ -226,7 +226,7 @@ def ajouter_progression(
     if rappel_value:
         objectif.rappel_heure = rappel_value
 
-    # ✅ Ajout à l'historique (Forcer l'enregistrement si vide)
+    # Ajout à l'historique (Forcer l'enregistrement si vide)
     if not isinstance(objectif.historique_progression, list):
         objectif.historique_progression = []
 
@@ -239,7 +239,7 @@ def ajouter_progression(
     }
     objectif.historique_progression.append(progression_entry)
 
-    # 🔥 **Calcul du score global de progression (%)**
+    # **Calcul du score global de progression (%)**
     if checkbox_value:  # ✅ Si la checkbox est cochée, l'objectif est à 100%
         total_score = 100
     else:
@@ -255,30 +255,30 @@ def ajouter_progression(
         if "rappel" in modules_activés and rappel_value:
             total_score += poids_par_module
 
-        total_score = min(total_score, 100)  # 🔥 Ne jamais dépasser 100%
+        total_score = min(total_score, 100)  # Ne jamais dépasser 100%
 
-    # ✅ Enregistrer `score_global` en `Integer`
+    # Enregistrer `score_global` en `Integer`
     objectif.score_global = int(total_score)
 
-    # 🔄 Mise à jour explicite dans la base de données
+    # Mise à jour explicite dans la base de données
     db.execute(
         update(Objectif)
         .where(Objectif.id == objectif_id)
         .values(
             compteur=objectif.compteur,
-            score_global=objectif.score_global,  # 🔥 Stocké en base en tant qu'entier
+            score_global=objectif.score_global,  # Stocké en base en tant qu'entier
             rappel_heure=objectif.rappel_heure,
             historique_progression=json.dumps(objectif.historique_progression)
         )
     )
 
     db.commit()
-    db.refresh(objectif)  # 🔄 Rafraîchir les données après commit
+    db.refresh(objectif)  # Rafraîchir les données après commit
 
     return {
         "message": "Progression ajoutée avec succès",
         "objectif_id": objectif.id,
         "nouveau_compteur": objectif.compteur,
-        "score_global": objectif.score_global,  # ✅ Maintenant stocké en `Integer`
+        "score_global": objectif.score_global,  # Maintenant stocké en `Integer`
         "historique_progression": objectif.historique_progression
     }

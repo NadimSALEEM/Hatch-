@@ -562,107 +562,231 @@ Widget _buildProgressSection() {
   );
 }
 
-
 Widget _buildObjectivesSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        "Objectifs",
-        style: TextStyle(fontSize: 18, fontFamily: 'NunitoBold'),
-      ),
-      const SizedBox(height: 10),
-      ..._objectifs.map((objectif) {
-        return Card(
-          margin: EdgeInsets.symmetric(vertical: 5),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 🎯 Nom et type d'objectif
-                Text(
-                  objectif["nom"],
-                  style: TextStyle(fontSize: 16, fontFamily: 'NunitoBold'),
+  return Card(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    elevation: 4,
+    shadowColor: Colors.grey.shade300,
+    color: Colors.white,
+    child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Titre et lien "Tout"
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Objectifs",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontFamily: 'NunitoBold',
+                  color: Color(0xFF2F2F2F),
                 ),
-                Text(
-  "${calculateDaysCompleted(objectif["historique_progression"] ?? [])} / "
-  "${objectif.containsKey("periode") ? objectif["periode"] : selectedPeriod} jours | "
-  "${objectif.containsKey("type") ? objectif["type"] : selectedObjectiveType}",
-  style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Colors.grey),
-),
-                const SizedBox(height: 10),
-
-                // 🔢 Module Compteur
-                if (objectif["modules"]["counter"] == true)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(icon: Icon(Icons.remove), onPressed: () => _decrementCounter(objectif)),
-                      Text("${objectif["compteur"]}/${objectif["total"]} ${objectif["unite_compteur"]}"),
-                      IconButton(icon: Icon(Icons.add), onPressed: () => _incrementCounter(objectif)),
-                    ],
-                  ),
-
-                // ✅ Module Checkbox
-                if (objectif["modules"]["checkbox"] == true)
-  CheckboxListTile(
-    title: Text("Objectif complété aujourd'hui"),
-    value: objectif["completed"] ?? false,
-    onChanged: (bool? value) {
-      setState(() {
-        objectif["completed"] = value!;
-      });
-
-      // Enregistrement de la progression via l'API
-      _addProgressToAPI(objectif["id"], {"checkbox": value});
-    },
-  ),
-
-                // ⏳ Module Chrono
-                if (objectif["modules"]["chrono"] == true)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => _toggleChrono(objectif),
-                        child: Text((_chronoActive[objectif["id"]] ?? false) ? "Pause" : "Démarrer"),
+              ),
+              GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/tous_les_objectifs'),
+                child: Row(
+                  children: const [
+                    Text(
+                      'Tout',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFAB96FF),
                       ),
-                      Text("Temps: ${_formatTime(_chronoValues[objectif["id"]] ?? 0)}"),
-                    ],
-                  ),
-
-
-                // 🔔 Module Rappel
-                if (objectif["modules"]["reminder"] == true)
-                  Row(
-                    children: [
-                      Icon(Icons.notifications_active, color: Colors.purple),
-                      Text("Rappel à ${objectif["rappelHeure"] ?? "18h30"}"),
-                    ],
-                  ),
-              ],
-            ),
+                    ),
+                    SizedBox(width: 4), // Ajoute un petit espace
+                    Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFFAB96FF)),
+                  ],
+                ),
+              ),
+            ],
           ),
-        );
-      }).toList(),
+          const SizedBox(height: 10),
 
-      const SizedBox(height: 10),
-      
-      // 🟣 Bouton Ajouter un Objectif
-      ElevatedButton(
-        onPressed: () {
-          showCreateObjectiveDialog(
+          // Liste des objectifs
+          if (_objectifs.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Text(
+                  "Aucun objectif défini.",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'Nunito',
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+            )
+          else
+            ..._objectifs.map((objectif) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Nom de l'objectif
+                    Text(
+                      objectif["nom"],
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'NunitoBold',
+                        color: Color(0xFF9381FF),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "${calculateDaysCompleted(objectif["historique_progression"] ?? [])} / "
+                      "${objectif.containsKey("periode") ? objectif["periode"] : selectedPeriod} jours | "
+                      "${objectif.containsKey("type") ? objectif["type"] : selectedObjectiveType}",
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Nunito',
+                        color: Color(0xFF666666),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+
+                    // Module Compteur
+                    if (objectif["modules"]["counter"] == true)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove, color: Color(0xFF9381FF)),
+                            onPressed: () => _decrementCounter(objectif),
+                          ),
+                          Text(
+                            "${objectif["compteur"]}/${objectif["total"]} ${objectif["unite_compteur"]}",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'NunitoBold',
+                              color: Color(0xFF2F2F2F),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.add, color: Color(0xFF9381FF)),
+                            onPressed: () => _incrementCounter(objectif),
+                          ),
+                        ],
+                      ),
+
+                    // Module Checkbox
+                    if (objectif["modules"]["checkbox"] == true)
+                      CheckboxListTile(
+                        title: const Text(
+                          "Objectif complété aujourd'hui",
+                          style: TextStyle(fontSize: 14, fontFamily: 'Nunito'),
+                        ),
+                        value: objectif["completed"] ?? false,
+                        activeColor: const Color(0xFF9381FF),
+                        onChanged: (bool? value) {
+                          setState(() {
+                            objectif["completed"] = value!;
+                          });
+
+                          // Enregistrement de la progression via l'API
+                        },
+                      ),
+
+                    // Module Chrono
+                    if (objectif["modules"]["chrono"] == true)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF9381FF),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            ),
+                            onPressed: () => _toggleChrono(objectif),
+                            child: Text(
+                              (_chronoActive[objectif["id"]] ?? false) ? "Pause" : "Démarrer",
+                              style: const TextStyle(
+                                fontFamily: 'NunitoBold',
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            "Temps: ${_formatTime(_chronoValues[objectif["id"]] ?? 0)}",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'NunitoBold',
+                              color: Color(0xFF2F2F2F),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                    // Module Rappel
+                    if (objectif["modules"]["reminder"] == true)
+                      Row(
+                        children: [
+                          const Icon(Icons.notifications_active, color: Color(0xFF9381FF)),
+                          const SizedBox(width: 6),
+                          Text(
+                            "Rappel à ${objectif["rappelHeure"] ?? "18h30"}",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'Nunito',
+                              color: Color(0xFF666666),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                    // Séparation entre les objectifs
+                    const Divider(height: 20, color: Color(0xFFE0E0E0)),
+                  ],
+                ),
+              );
+            }).toList(),
+
+          const SizedBox(height: 10),
+
+          // Bouton Ajouter un Objectif
+          Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.6,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  showCreateObjectiveDialog(
                     context: context,
                     habitId: widget.habitId,
                     addObjectiveToAPI: _addObjectiveToAPI,
                   );
-        },
-        child: Text("Ajouter un objectif"),
+                },
+                child: const Text(
+                  "Ajouter un objectif",
+                  style: TextStyle(
+                    fontFamily: 'NunitoBold',
+                    fontSize: 14,
+                    color: Color(0xFFFBFBFB),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
-    ],
+    ),
   );
 }
+
+
 
 
 
@@ -673,7 +797,7 @@ void showCreateObjectiveDialog({
 }) {
   final TextEditingController objectiveNameController = TextEditingController();
   final TextEditingController objectiveCountController = TextEditingController();
-  final TextEditingController unitController = TextEditingController(); // Ajout de l'unité personnalisée
+  final TextEditingController unitController = TextEditingController();
 
   Map<String, bool> selectedModules = {
     "counter": false,
@@ -681,7 +805,6 @@ void showCreateObjectiveDialog({
     "reminder": false,
     "checkbox": false
   };
-
 
   // Mise à jour du type d’objectif en fonction de la période choisie
   void _updateObjectiveType() {
@@ -704,203 +827,216 @@ void showCreateObjectiveDialog({
     builder: (BuildContext context) {
       return Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFF9381FF), width: 2),
+          borderRadius: BorderRadius.circular(15),
         ),
         backgroundColor: Colors.white,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           child: StatefulBuilder(
             builder: (context, setState) {
-              return SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Titre et bouton de fermeture
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Nouvel Objectif',
+                        style: TextStyle(
+                          fontFamily: 'NunitoBold',
+                          fontSize: 20,
+                          color: Color(0xFF2F2F2F),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Color(0xFF2F2F2F)),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Champ Nom de l’objectif
+                  const Text(
+                    'Nom de l\'objectif',
+                    style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: objectiveNameController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Color(0xFFAB96FF), width: 1),
+                      ),
+                      hintText: "Ex : Courir 5km",
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Sélection de la période
+                  const Text(
+                    'Période',
+                    style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: selectedPeriod,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    items: ["7", "30", "90", "365"].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text("$value jours"),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedPeriod = newValue!;
+                        _updateObjectiveType();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Sélection du type d’objectif
+                  const Text(
+                    'Type d\'objectif',
+                    style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: selectedObjectiveType,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    items: ["Chaque jour", "Chaque semaine", "Chaque mois"]
+                        .where((type) =>
+                            selectedPeriod == "7"
+                                ? type == "Chaque jour"
+                                : selectedPeriod == "30"
+                                    ? ["Chaque jour", "Chaque semaine"].contains(type)
+                                    : true)
+                        .map((String value) => DropdownMenuItem(value: value, child: Text(value)))
+                        .toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedObjectiveType = newValue!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Sélection des modules
+                  const Text(
+                    'Modules',
+                    style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 5,
+                    children: [
+                      _buildCheckbox("Compteur", "counter", selectedModules, setState),
+                      _buildCheckbox("Checkbox", "checkbox", selectedModules, setState),
+                      _buildCheckbox("Chrono", "chrono", selectedModules, setState),
+                      _buildCheckbox("Rappel", "reminder", selectedModules, setState),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+
+                  if (selectedModules["counter"] == true)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Nouvel Objectif',
+                          "Définir un objectif personnalisé",
+                          style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          keyboardType: TextInputType.number,
+                          controller: objectiveCountController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.grey.shade100,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: Color(0xFFAB96FF), width: 1),
+                            ),
+                            hintText: "Ex : 10",
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Unité de l'objectif",
+                          style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: unitController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.grey.shade100,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: Color(0xFFAB96FF), width: 1),
+                            ),
+                            hintText: "Ex : km, pages, verres",
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  // Bouton Ajouter
+                  Center(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.6,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: TextButton(
+                        onPressed: () {
+                          addObjectiveToAPI({
+                            "nom": objectiveNameController.text,
+                            "periode": selectedPeriod,
+                            "type": selectedObjectiveType,
+                            "modules": selectedModules,
+                            "total": int.tryParse(objectiveCountController.text) ?? 1,
+                            "unite_compteur": unitController.text,
+                          });
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text(
+                          "Ajouter l'objectif",
                           style: TextStyle(
                             fontFamily: 'NunitoBold',
-                            fontSize: 18,
-                            color: Color(0xFF2F2F2F),
+                            fontSize: 14,
+                            color: Color(0xFFFBFBFB), // Blanc
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Color(0xFF2F2F2F)),
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-
-                    const Text(
-                      'Nom de l\'objectif',
-                      style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: objectiveNameController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFFEDEDED)),
-                        ),
-                        hintText: "Ex : Courir 5km",
                       ),
                     ),
-                    const SizedBox(height: 20),
+                  ),
 
-                    const Text(
-                      'Période',
-                      style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
-                    ),
-                    const SizedBox(height: 10),
-                    DropdownButton<String>(
-                      value: selectedPeriod,
-                      isExpanded: true,
-                      items: ["7", "30", "90", "365"].map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text("$value jours"),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedPeriod = newValue!;
-                          _updateObjectiveType();
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-
-                    const Text(
-                      'Type d\'objectif',
-                      style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
-                    ),
-                    const SizedBox(height: 10),
-                    DropdownButton<String>(
-                      value: selectedObjectiveType,
-                      isExpanded: true,
-                      items: ["Chaque jour", "Chaque semaine", "Chaque mois"]
-                          .where((type) =>
-                              selectedPeriod == "7"
-                                  ? type == "Chaque jour"
-                                  : selectedPeriod == "30"
-                                      ? ["Chaque jour", "Chaque semaine"].contains(type)
-                                      : true)
-                          .map((String value) => DropdownMenuItem(value: value, child: Text(value)))
-                          .toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedObjectiveType = newValue!;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-
-                    const Text(
-                      'Modules',
-                      style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
-                    ),
-                    const SizedBox(height: 10),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CheckboxListTile(
-                            title: const Text("Compteur", style: TextStyle(fontSize: 12, fontFamily: 'Nunito')),
-                            value: selectedModules["counter"],
-                            onChanged: (bool? value) {
-                              setState(() {
-                                selectedModules["counter"] = value!;
-                                if (value) selectedModules["checkbox"] = false;
-                              });
-                            },
-                          ),
-                        ),
-                        Expanded(
-                          child: CheckboxListTile(
-                            title: const Text("Checkbox", style: TextStyle(fontSize: 12, fontFamily: 'Nunito')),
-                            value: selectedModules["checkbox"],
-                            onChanged: (bool? value) {
-                              setState(() {
-                                selectedModules["checkbox"] = value!;
-                                if (value) selectedModules["counter"] = false;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    if (selectedModules["counter"] == true)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 10),
-                          const Text(
-                            "Définir un objectif personnalisé",
-                            style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
-                          ),
-                          const SizedBox(height: 10),
-                          TextField(
-                            keyboardType: TextInputType.number,
-                            controller: objectiveCountController,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: Color(0xFFEDEDED)),
-                              ),
-                              hintText: "Ex : 10",
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            "Unité de l'objectif",
-                            style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
-                          ),
-                          const SizedBox(height: 10),
-                          TextField(
-                            controller: unitController,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: Color(0xFFEDEDED)),
-                              ),
-                              hintText: "Ex : km, pages, verres",
-                            ),
-                          ),
-                        ],
-                      ),
-
-                    const SizedBox(height: 20),
-
-                    ElevatedButton(
-                      onPressed: () {
-                        addObjectiveToAPI({
-                          "nom": objectiveNameController.text,
-                          "periode": selectedPeriod,
-                          "type": selectedObjectiveType,
-                          "modules": selectedModules,
-                          "total": int.tryParse(objectiveCountController.text) ?? 1,
-                          "unite_compteur": unitController.text,
-                        });
-
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text("Ajouter l'objectif"),
-                    ),
-                  ],
-                ),
+                ],
               );
             },
           ),
@@ -909,6 +1045,59 @@ void showCreateObjectiveDialog({
     },
   );
 }
+
+Widget _buildCheckbox(String title, String key, Map<String, bool> selectedModules, StateSetter setState) {
+  bool isDisabled = (key == "checkbox" && selectedModules["counter"] == true) ||
+                    (key == "counter" && selectedModules["checkbox"] == true);
+
+  return Opacity(
+    opacity: isDisabled ? 0.5 : 1, // Rendre la case plus fade si désactivée
+    child: GestureDetector(
+      onTap: isDisabled
+          ? null
+          : () {
+              setState(() {
+                selectedModules[key] = !(selectedModules[key] ?? false);
+
+                // Désactiver l'autre module si l'un est activé
+                if (key == "counter" && selectedModules[key] == true) {
+                  selectedModules["checkbox"] = false;
+                } else if (key == "checkbox" && selectedModules[key] == true) {
+                  selectedModules["counter"] = false;
+                }
+              });
+            },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selectedModules[key] == true ? Color(0xFF9381FF) : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Color(0xFF9381FF), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              selectedModules[key] == true ? Icons.check_box : Icons.check_box_outline_blank,
+              color: selectedModules[key] == true ? Colors.white : Color(0xFF9381FF),
+            ),
+            SizedBox(width: 5),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontFamily: 'Nunito',
+                color: selectedModules[key] == true ? Colors.white : Color(0xFF9381FF),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+
 
 int calculateDaysCompleted(List<dynamic> historique) {
   if (historique.isEmpty) return 0;
@@ -965,7 +1154,7 @@ int calculateDaysCompleted(List<dynamic> historique) {
     });
 
     // Enregistrement de la progression via l'API
-    _addProgressToAPI(objectif["id"], {"compteur": -1});
+    
   }
 
   void _incrementCounter(Map<String, dynamic> objectif) {
@@ -974,7 +1163,7 @@ int calculateDaysCompleted(List<dynamic> historique) {
     });
 
     // Enregistrement de la progression via l'API
-    _addProgressToAPI(objectif["id"], {"compteur": 1});
+    
   }
 
 
@@ -992,7 +1181,7 @@ void _toggleChrono(Map<String, dynamic> objectif) {
 
     // Enregistrer le temps total écoulé dans l'API
     int elapsedTime = _chronoValues[objectifId] ?? 0;
-    _addProgressToAPI(objectifId, {"chrono": elapsedTime});
+    
   } else {
     // Démarrer le chrono
     _chronoActive[objectifId] = true;
