@@ -12,6 +12,8 @@ dependencies:
   dio: ^5.8.0+1
   flutter_secure_storage: ^9.2.4
   logger: ^2.5.0
+  email_validator: ^2.0.1
+  intl: ^0.18.0
 
 dev_dependencies:
   flutter_test:
@@ -20,3 +22,22 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/white_logo.png
+    - assets/images/dragons_welcome.png
+    - assets/images/color_logo.png
+    - assets/images/coach_popup.png
+    - assets/images/corbeille_suppression.png
+  fonts:
+    - family: BricolageGrotesqueBold
+      fonts:
+        - asset: assets/fonts/BricolageGrotesque-Bold.ttf
+    - family: BricolageGrotesqueMedium
+      fonts:
+        - asset: assets/fonts/BricolageGrotesque-Medium.ttf
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-SemiBold.ttf
+    - family: NunitoBold
+      fonts:
+        - asset: assets/fonts/Nunito-ExtraBold.ttf

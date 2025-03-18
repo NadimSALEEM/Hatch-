@@ -1,0 +1,20 @@
+meta {
+  name: Read
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:8080/users/me
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJrb2tvQGtva28ua29rbyIsImV4cCI6MTc0MDc3NTE4NH0.NQju21P2zjNfP40Ft93abBRiQ15bYCUagHjmVFmcEHE
+}
+
+body:form-urlencoded {
+  ~username: test@example.com
+  ~password: password123
+}

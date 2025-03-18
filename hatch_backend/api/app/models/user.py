@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from pydantic import BaseModel
 from typing import Optional
+from sqlalchemy.exc import SQLAlchemyError
 
 # Charger l'URL de la base de données depuis les variables d'environnement
 DB_URL = os.getenv('DATABASE_URL')
@@ -16,50 +17,48 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 class Utilisateur(Base):
-    # Modèle de base de données pour la table "users"
     __tablename__ = "utilisateurs"
 
     id = Column(Integer, primary_key=True, index=True)
     nom_utilisateur = Column(String, unique=True, index=True)
-
     email = Column(String, unique=True, index=True)
     mot_de_passe_hache = Column(String, nullable=False)
     telephone = Column(String, unique=True, index=True, nullable=False)
-    date_naissance = Column(DateTime, nullable=True)
+    date_naissance = Column(String, nullable=True)
     cree_le = Column(DateTime, default=datetime.utcnow)
-    photo_profil = Column(String, nullable=True)  # Lien vers l'image de profil
+    photo_profil = Column(String, nullable=True)
     biographie = Column(String, nullable=True)
-    coach_assigne = Column(Integer, nullable=True)  # ID du coach si assigné
+    coach_assigne = Column(Integer, nullable=True)
 
-
-# Modèles Pydantic pour l'API Utilisateur
+# Modèles Pydantic pour l'API
 class CreerUtilisateur(BaseModel):
     nom_utilisateur: str
     email: str
-    telephone: str  # Ajout du champ téléphone
+    telephone: str
     mot_de_passe: str
-    date_naissance: Optional[datetime] = None
-    photo_profil: Optional[str] = None  # Ajout du champ optionnel pour l'affichage
-    biographie: Optional[str] = None  # Ajout du champ optionnel pour l'affichage
-    coach_assigne: Optional[int] = None  # Ajout du champ optionnel pour l'affichage
-
+    date_naissance: Optional[str] = None
+    photo_profil: Optional[str] = None
+    biographie: Optional[str] = None
+    coach_assigne: Optional[int] = None
 
 class MiseAJourUtilisateur(BaseModel):
     nom_utilisateur: Optional[str] = None
     email: Optional[str] = None
     telephone: Optional[str] = None
-    date_naissance: Optional[datetime] = None
+    date_naissance: Optional[str] = None
     photo_profil: Optional[str] = None
     biographie: Optional[str] = None
     coach_assigne: Optional[int] = None
 
+class MiseAJourMotDePasse(BaseModel):
+    mot_de_passe_hache: str
 
 class LireUtilisateur(BaseModel):
     id: int
     nom_utilisateur: str
     email: str
     telephone: Optional[str] = None
-    date_naissance: Optional[datetime] = None
+    date_naissance: Optional[str] = None
     photo_profil: Optional[str] = None
     biographie: Optional[str] = None
     coach_assigne: Optional[int] = None
@@ -68,6 +67,11 @@ class LireUtilisateur(BaseModel):
         orm_mode = True
 
 class SupprimerUtilisateur(BaseModel):
-    id: int
+    email: Optional[str] = None
+    id: Optional[int] = None
 
-Base.metadata.create_all(engine)
+# Création des tables avec gestion des erreurs
+try:
+    Base.metadata.create_all(engine)
+except SQLAlchemyError as e:
+    print(f"Erreur lors de la création des tables : {e}")

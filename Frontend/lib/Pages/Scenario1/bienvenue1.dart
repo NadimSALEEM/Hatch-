@@ -5,38 +5,28 @@ class Bienvenue1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Liste des routes et leurs libellés correspondants
-    final Map<String, String> routes = {
-      '/Bienvenue2': 'Aller à Bienvenue2',
-      '/accueil': 'Aller à Accueil',
-      '/creer_un_compte': 'Aller à Créer un compte',
-      '/se_connecter': 'Aller à Se connecter',
-      '/reinit_mot_de_passe': 'Aller à Réinitialiser le mot de passe',
-      '/parametres_compte': 'Aller à Paramètres du compte',
-      '/profil': 'Aller à Profil',
-      '/questionnaire': 'Aller à Questionnaire',
-      '/init_nouveau_mot_de_passe': 'Aller à Initier un nouveau mot de passe',
-    };
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bienvenue1'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: routes.entries.map((entry) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  // Navigation vers la page correspondante en fonction de la clé de la route
-                  Navigator.pushNamed(context, entry.key);
-                },
-                child: Text(entry.value),
-              ),
-            );
-          }).toList(),
+      body: GestureDetector(
+        onTap: () {
+          //Redirection vers l'écran suivant lorsqu'on clique sur l'écran
+          Navigator.pushNamed(context, '/Bienvenue2');
+        },
+        child: Container(
+          //Fond dégradé
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
+          child: Center(
+            child: Image.asset( //Affichage du logo
+              'images/white_logo.png',
+              width: 150,
+              height: 150,
+            ),
+          ),
         ),
       ),
     );

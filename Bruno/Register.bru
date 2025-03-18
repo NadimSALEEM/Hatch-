@@ -1,0 +1,26 @@
+meta {
+  name: Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/auth/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nom_utilisateur": "test1",
+    "email": "test1@example.com",
+    "telephone": "0617446645",
+    "mot_de_passe": "password123",
+    "biographie" : "memo",
+    "date_naissance" : "2025-02-21"
+  }
+}

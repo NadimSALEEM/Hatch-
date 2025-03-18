@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.models.user import Utilisateur
-from app.models.user import CreerUtilisateur, MiseAJourUtilisateur, LireUtilisateur
+from app.models.user import Utilisateur, MiseAJourUtilisateur, LireUtilisateur, MiseAJourMotDePasse
 from app.routers.auth import get_current_user
+from app.internal.auth_utils import hash_password
+import logging
 
 router = APIRouter(
     prefix="/users",
@@ -20,21 +21,48 @@ def lire_profil(utilisateur: dict = Depends(get_current_user), db: Session = Dep
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     return utilisateur_db
 
+
+
 @router.put("/me/update")
 def mettre_a_jour_profil(update_data: MiseAJourUtilisateur, utilisateur: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     """
-    Met à jour les informations du profil de l'utilisateur (nom, email, téléphone, date de naissance, photo, bio, coach assigné).
+    Met à jour les informations du profil de l'utilisateur.
     """
+    logging.info(f"Mise à jour du profil pour {utilisateur['email']}")
     utilisateur_db = db.query(Utilisateur).filter(Utilisateur.email == utilisateur["email"]).first()
     if not utilisateur_db:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
 
-    if update_data.nom_utilisateur:
-        utilisateur_db.nom_utilisateur = update_data.nom_utilisateur
     if update_data.email:
+        email_existant = db.query(Utilisateur).filter(Utilisateur.email == update_data.email).first()
+        if email_existant and email_existant.email != utilisateur["email"]:
+            logging.warning(f"Email déjà utilisé : {update_data.email}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"code": "EMAIL_EXISTS", "message": "Cet email est déjà utilisé."}
+            )
         utilisateur_db.email = update_data.email
+
+    if update_data.nom_utilisateur:
+        username_existant = db.query(Utilisateur).filter(Utilisateur.nom_utilisateur == update_data.nom_utilisateur).first()
+        if username_existant and username_existant.nom_utilisateur != utilisateur["nom_utilisateur"]:
+            logging.warning(f"Nom d'utilisateur déjà pris : {update_data.nom_utilisateur}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"code": "USERNAME_EXISTS", "message": "Ce nom d'utilisateur est déjà pris."}
+            )
+        utilisateur_db.nom_utilisateur = update_data.nom_utilisateur
+
     if update_data.telephone:
+        telephone_existant = db.query(Utilisateur).filter(Utilisateur.telephone == update_data.telephone).first()
+        if telephone_existant and telephone_existant.telephone != utilisateur["telephone"]:
+            logging.warning(f"Téléphone déjà utilisé : {update_data.telephone}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"code": "PHONE_EXISTS", "message": "Ce numéro de téléphone est déjà utilisé."}
+            )
         utilisateur_db.telephone = update_data.telephone
+
     if update_data.date_naissance:
         utilisateur_db.date_naissance = update_data.date_naissance
     if update_data.photo_profil:
@@ -45,7 +73,28 @@ def mettre_a_jour_profil(update_data: MiseAJourUtilisateur, utilisateur: dict = 
         utilisateur_db.coach_assigne = update_data.coach_assigne
 
     db.commit()
+
+    logging.info("Profil mis à jour avec succès")
     return {"result": "success", "code": 200, "detail": "Profil mis à jour"}
+
+
+
+@router.put("/me/change_pw")
+def mettre_a_jour_mdp(update_data: MiseAJourMotDePasse, utilisateur: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Met à jour le mot de passe de l'utilisateur.
+    """
+    utilisateur_db = db.query(Utilisateur).filter(Utilisateur.email == utilisateur["email"]).first()
+    if not utilisateur_db:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    if update_data.mot_de_passe_hache:
+        utilisateur_db.mot_de_passe_hache = hash_password(update_data.mot_de_passe_hache)        
+
+    db.commit()
+    return {"result": "success", "code": 200, "detail": "Mot de passe mis à jour"}
+
+
 
 @router.delete("/me/supprimer")
 def supprimer_profil(utilisateur: dict = Depends(get_current_user), db: Session = Depends(get_db)):
