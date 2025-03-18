@@ -202,7 +202,7 @@ Future<void> _addProgressToAPI(int objectifId, Map<String, dynamic> progressionD
       actions: [
         IconButton(
           icon: const Icon(Icons.settings, color: Color(0xFF2F2F2F)),
-          onPressed: () {},
+          onPressed: () {Navigator.pushReplacementNamed(context, '/parametres_habitude');},
         ),
       ],
       bottom: const PreferredSize(

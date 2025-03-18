@@ -13,20 +13,32 @@ class _ParametresHabitudeState extends State<ParametresHabitude> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF2F2F2F)), // Bouton retour 🔙
+          onPressed: () {
+            Navigator.pop(context); // Retour en arrière
+          },
+        ),
+        centerTitle: true,
+        title: const Text(
+          "Paramètres",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'NunitoBold',
+            color: Color(0xFF2F2F2F),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Paramètres',
-                style: TextStyle(
-                  fontFamily: 'NunitoBold',
-                  fontSize: 29,
-                  color: Color(0xFF2F2F2F),
-                ),
-              ),
               const SizedBox(height: 32),
 
               Center(
