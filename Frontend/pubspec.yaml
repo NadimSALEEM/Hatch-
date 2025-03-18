@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   dio: ^5.8.0+1
+  percent_indicator: ^4.2.3
   flutter_secure_storage: ^9.2.4
   logger: ^2.5.0
   email_validator: ^2.0.1
@@ -28,6 +29,10 @@ flutter:
     - assets/images/color_logo.png
     - assets/images/coach_popup.png
     - assets/images/corbeille_suppression.png
+    - assets/images/Habitude/habitCreated.png
+    - assets/images/Habitude/changeObjective.png
+    - assets/images/Habitude/deleteOk.png
+
   fonts:
     - family: BricolageGrotesqueBold
       fonts:

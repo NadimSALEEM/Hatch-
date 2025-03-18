@@ -1,0 +1,20 @@
+meta {
+  name: Read habit
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:8080/habits/1
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MjAwNjYwMX0.q3Db8k2OhHtW2No24cabslQu-hOFh_t6AzvjWzsEzkU
+}
+
+body:form-urlencoded {
+  ~username: test@example.com
+  ~password: password123
+}

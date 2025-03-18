@@ -28,13 +28,24 @@ class MainApp extends StatelessWidget {
         '/parametres_compte': (context) => AuthGuard(page: ParametresCompte()),
         '/profil': (context) => AuthGuard(page: Profil()),
         '/questionnaire': (context) => AuthGuard(page: Questionnaire()),
-        '/creer_objectif': (context) => AuthGuard(page: CreerObjectif()),
+        //'/creer_objectif': (context) => AuthGuard(page: CreerObjectif()),
         '/creer_une_habitude': (context) => AuthGuard(page: CreerHabitude()),
-        '/habitude': (context) => AuthGuard(page: Habitude()),
+
+        '/habitude': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return AuthGuard(page: Habitude(habitId: args['habitId']));
+        },
+
         '/parametres_habitude': (context) => AuthGuard(page: ParametresHabitude()),
         '/post_creation_habitude': (context) => AuthGuard(page: PostCreationHabitude()),
         '/progres_habitude': (context) => AuthGuard(page: ProgresHabitude()),
         '/toutes_les_habitudes': (context) => AuthGuard(page: ToutesLesHabitudes()),
+
+        '/tous_les_objectifs': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return AuthGuard(page: TousLesObjectifs(habitId: args['habitId']));
+        },
+        
         '/choix_coach': (context) => AuthGuard(page: ChoixCoach()),
         '/coach': (context) => AuthGuard(page: Coach()),
       },

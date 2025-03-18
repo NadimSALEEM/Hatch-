@@ -1,0 +1,26 @@
+meta {
+  name: Create Habit
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/habits/create
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MjAzODczNX0.JgJ8QZvxiDF4wU07ytKa6ehjqN73K9AWRGwYFeSnQk8
+}
+
+body:json {
+  {
+      "nom": "nqsdow",
+      "desc": "dsqd",
+      "statut": 1,
+      "freq": "Quotifdien",
+      "prio": "haute",
+      "labels" : ["yg"]
+  }
+}

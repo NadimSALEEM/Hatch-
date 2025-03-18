@@ -1,0 +1,29 @@
+meta {
+  name: Create Objectif
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/habits/1/objectifs/create
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MjAzODczNX0.JgJ8QZvxiDF4wU07ytKa6ehjqN73K9AWRGwYFeSnQk8
+}
+
+body:json {
+  {
+    "id": 1,
+    "habit_id": 1,
+    "user_id": 1,
+    "nom": "objectif nonactif",
+    "statut": 0,
+    "compteur": 1,
+    "total": 100,
+    "unite_compteur": "m"
+  }
+  
+}

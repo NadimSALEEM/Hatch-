@@ -1,0 +1,15 @@
+meta {
+  name: Read All habits
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/habits
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MjAxNjA3Nn0.XoIeLqXmEk02YM5nWEC-eSMD_Y8Ov9DbWH96CWJnqLs
+}

@@ -19,6 +19,7 @@ export 'package:hatch/Pages/Scenario2/parametres_habitude.dart';
 export 'package:hatch/Pages/Scenario2/post_creation_habitude.dart';
 export 'package:hatch/Pages/Scenario2/progres_habitude.dart';
 export 'package:hatch/Pages/Scenario2/toutes_les_habitudes.dart';
+export 'package:hatch/Pages/Scenario2/tous_les_objectifs.dart';
 
 // Scenario 3
 export 'package:hatch/Pages/Scenario3/choix_coach.dart';
