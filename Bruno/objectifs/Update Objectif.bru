@@ -5,13 +5,13 @@ meta {
 }
 
 put {
-  url: http://localhost:8080/habits/1/objectifs/3/edit
+  url: http://localhost:8080/habits/1/objectifs/1/edit
   body: json
   auth: none
 }
 
 headers {
-  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MTM3ODIyMX0.KaW0J1Zy1GCNCWo3rf2aA4Tnd6KkNAOQUSFMjm5XoLM
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc0MjAzNzM1MH0.wof6VsUqzxa1YmDUlaY5tlW8lVwy1OcRvSXD6P3ypnw
 }
 
 body:json {
@@ -19,6 +19,6 @@ body:json {
       "id": 3,
       "habit_id": 1,
       "user_id": 1,
-      "statut": 1
+      "historique_progression": []
     }
 }

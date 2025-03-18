@@ -21,6 +21,8 @@ class _HabitudeState extends State<Habitude> {
   Map<String, dynamic>? habitDetails;
   
   int _selectedIndex = 0;
+  String selectedPeriod = "7";
+  String selectedObjectiveType = "Chaque jour";
 
   final List<String> dragonNames = [
   "Midgardsormr", "Fafnir", "Bahamut", "Dracolich", "Alduin", "Smaug", "Tiamat", "Shenron"
@@ -28,6 +30,7 @@ class _HabitudeState extends State<Habitude> {
 
   late String dragonName;
   List<dynamic> _objectifs = [];
+
 
   @override
   void initState() {
@@ -102,17 +105,17 @@ Future<void> _addObjectiveToAPI(Map<String, dynamic> objectif) async {
     final response = await _dio.post(
       "http://localhost:8080/habits/$habitId/objectifs/create",
       data: {
-        "habit_id": habitId,
-        "user_id": userId,
-        "nom": objectif["nom"],
-        "statut": 1,
-        "compteur": 0,
-        "total": 100,
-        "unite_compteur": "fois",
-        "modules": objectif["modules"],
-        "rappel_heure": null,
-        "historique_progression": [],
-      },
+  "habit_id": habitId,
+  "user_id": userId,
+  "statut": 1,
+  "total": objectif["total"],
+  "nom": objectif["nom"],
+  "unite_compteur": objectif["unite_compteur"],
+  "modules": objectif["modules"],
+  "rappel_heure": objectif.containsKey("rappel_heure") && objectif["rappel_heure"] != null 
+            ? objectif["rappel_heure"].toString()
+            : null
+},
       options: Options(headers: {"Authorization": "Bearer $token"}),
     );
 
@@ -124,6 +127,33 @@ Future<void> _addObjectiveToAPI(Map<String, dynamic> objectif) async {
     }
   } catch (e) {
     print("Erreur lors de l'ajout de l'objectif : $e");
+  }
+}
+
+Future<void> _addProgressToAPI(int objectifId, Map<String, dynamic> progressionData) async {
+  try {
+    String? token = await _secureStorage.read(key: "jwt_token");
+    if (token == null) {
+      print("Erreur : Token JWT non trouvé.");
+      return;
+    }
+
+    int habitId = widget.habitId; // ID de l'habitude liée à l'objectif
+
+    final response = await _dio.post(
+      "http://localhost:8080/habits/$habitId/objectifs/$objectifId/addprogress",
+      data: progressionData,
+      options: Options(headers: {"Authorization": "Bearer $token"}),
+    );
+
+    if (response.statusCode == 200) {
+      print("Progression ajoutée avec succès : ${response.data}");
+      fetchObjectives(); // Rafraîchir la liste des objectifs après l'ajout du progrès
+    } else {
+      print("Erreur HTTP ${response.statusCode} : ${response.data}");
+    }
+  } catch (e) {
+    print("Erreur lors de l'ajout de la progression : $e");
   }
 }
 
@@ -534,121 +564,107 @@ Widget _buildProgressSection() {
 
 
 Widget _buildObjectivesSection() {
-  return Card(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    elevation: 4,
-    shadowColor: Colors.grey.shade300,
-    color: Colors.white,
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Objectifs',
-                style: TextStyle(fontSize: 18, fontFamily: 'NunitoBold', color: Color(0xFF2F2F2F)),
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/tous_les_objectifs', arguments: {'habitId': widget.habitId});
-                },
-                child: Row(
-                  children: [
-                    Text(
-                      'Tout',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFAB96FF)),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFFAB96FF)),
-                  ],
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        "Objectifs",
+        style: TextStyle(fontSize: 18, fontFamily: 'NunitoBold'),
+      ),
+      const SizedBox(height: 10),
+      ..._objectifs.map((objectif) {
+        return Card(
+          margin: EdgeInsets.symmetric(vertical: 5),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 🎯 Nom et type d'objectif
+                Text(
+                  objectif["nom"],
+                  style: TextStyle(fontSize: 16, fontFamily: 'NunitoBold'),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
+                Text(
+  "${calculateDaysCompleted(objectif["historique_progression"] ?? [])} / "
+  "${objectif.containsKey("periode") ? objectif["periode"] : selectedPeriod} jours | "
+  "${objectif.containsKey("type") ? objectif["type"] : selectedObjectiveType}",
+  style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Colors.grey),
+),
+                const SizedBox(height: 10),
 
-          // Liste des objectifs (s'ils existent)
-          _objectifs.isEmpty
-              ? Center(
-                  child: Text("Aucun objectif pour l'instant.", style: TextStyle(fontSize: 16, color: Colors.grey)),
-                )
-              : Column(
-                  children: _objectifs.map((objectif) {
-                    double progressValue = objectif["compteur"] / objectif["total"];
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: Color(0xFFF3F2FF), borderRadius: BorderRadius.circular(12)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                objectif["nom"],
-                                style: const TextStyle(fontSize: 16, fontFamily: 'NunitoBold', color: Color(0xFF2F2F2F)),
-                              ),
-                              Icon(Icons.edit, color: Color(0xFF9381FF)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          LinearProgressIndicator(
-                            value: progressValue,
-                            backgroundColor: Colors.grey.shade300,
-                            color: Color(0xFF9381FF),
-                            minHeight: 8,
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('${objectif["compteur"]} / ${objectif["total"]} ${objectif["unite_compteur"]}',
-                                  style: const TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF2F2F2F))),
-                              Text('Actif', style: TextStyle(fontSize: 14, fontFamily: 'NunitoBold', color: Colors.green)),
-                            ],
-                          ),
-                        ],
+                // 🔢 Module Compteur
+                if (objectif["modules"]["counter"] == true)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(icon: Icon(Icons.remove), onPressed: () => _decrementCounter(objectif)),
+                      Text("${objectif["compteur"]}/${objectif["total"]} ${objectif["unite_compteur"]}"),
+                      IconButton(icon: Icon(Icons.add), onPressed: () => _incrementCounter(objectif)),
+                    ],
+                  ),
+
+                // ✅ Module Checkbox
+                if (objectif["modules"]["checkbox"] == true)
+  CheckboxListTile(
+    title: Text("Objectif complété aujourd'hui"),
+    value: objectif["completed"] ?? false,
+    onChanged: (bool? value) {
+      setState(() {
+        objectif["completed"] = value!;
+      });
+
+      // Enregistrement de la progression via l'API
+      _addProgressToAPI(objectif["id"], {"checkbox": value});
+    },
+  ),
+
+                // ⏳ Module Chrono
+                if (objectif["modules"]["chrono"] == true)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => _toggleChrono(objectif),
+                        child: Text((_chronoActive[objectif["id"]] ?? false) ? "Pause" : "Démarrer"),
                       ),
-                    );
-                  }).toList(),
-                ),
-          const SizedBox(height: 10),
+                      Text("Temps: ${_formatTime(_chronoValues[objectif["id"]] ?? 0)}"),
+                    ],
+                  ),
 
-          // Bouton Ajouter un Objectif
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              gradient: const LinearGradient(colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)]),
+
+                // 🔔 Module Rappel
+                if (objectif["modules"]["reminder"] == true)
+                  Row(
+                    children: [
+                      Icon(Icons.notifications_active, color: Colors.purple),
+                      Text("Rappel à ${objectif["rappelHeure"] ?? "18h30"}"),
+                    ],
+                  ),
+              ],
             ),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                showCreateObjectiveDialog(
+          ),
+        );
+      }).toList(),
+
+      const SizedBox(height: 10),
+      
+      // 🟣 Bouton Ajouter un Objectif
+      ElevatedButton(
+        onPressed: () {
+          showCreateObjectiveDialog(
                     context: context,
                     habitId: widget.habitId,
                     addObjectiveToAPI: _addObjectiveToAPI,
                   );
-              },
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('Ajouter un objectif',
-                  style: TextStyle(fontSize: 16, fontFamily: 'NunitoBold', color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-              ),
-            ),
-          ),
-        ],
+        },
+        child: Text("Ajouter un objectif"),
       ),
-    ),
+    ],
   );
 }
+
+
 
 void showCreateObjectiveDialog({
   required BuildContext context,
@@ -656,14 +672,32 @@ void showCreateObjectiveDialog({
   required Future<void> Function(Map<String, dynamic>) addObjectiveToAPI,
 }) {
   final TextEditingController objectiveNameController = TextEditingController();
-  String selectedPeriod = "7";
-  String selectedObjectiveType = "Chaque jour";
+  final TextEditingController objectiveCountController = TextEditingController();
+  final TextEditingController unitController = TextEditingController(); // Ajout de l'unité personnalisée
+
   Map<String, bool> selectedModules = {
     "counter": false,
     "chrono": false,
     "reminder": false,
     "checkbox": false
   };
+
+
+  // Mise à jour du type d’objectif en fonction de la période choisie
+  void _updateObjectiveType() {
+    List<String> validTypes = [];
+    if (selectedPeriod == "7") {
+      validTypes = ["Chaque jour"];
+    } else if (selectedPeriod == "30") {
+      validTypes = ["Chaque jour", "Chaque semaine"];
+    } else {
+      validTypes = ["Chaque jour", "Chaque semaine", "Chaque mois"];
+    }
+
+    if (!validTypes.contains(selectedObjectiveType)) {
+      selectedObjectiveType = validTypes.first;
+    }
+  }
 
   showDialog(
     context: context,
@@ -683,7 +717,6 @@ void showCreateObjectiveDialog({
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 🟣 Titre et bouton fermer
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -703,7 +736,6 @@ void showCreateObjectiveDialog({
                     ),
                     const SizedBox(height: 10),
 
-                    // 🟣 Nom de l'objectif
                     const Text(
                       'Nom de l\'objectif',
                       style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
@@ -718,11 +750,11 @@ void showCreateObjectiveDialog({
                           borderRadius: BorderRadius.circular(8),
                           borderSide: const BorderSide(color: Color(0xFFEDEDED)),
                         ),
+                        hintText: "Ex : Courir 5km",
                       ),
                     ),
                     const SizedBox(height: 20),
 
-                    // 🟣 Sélection Période et Type d'Objectif
                     const Text(
                       'Période',
                       style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
@@ -738,7 +770,10 @@ void showCreateObjectiveDialog({
                         );
                       }).toList(),
                       onChanged: (String? newValue) {
-                        setState(() => selectedPeriod = newValue!);
+                        setState(() {
+                          selectedPeriod = newValue!;
+                          _updateObjectiveType();
+                        });
                       },
                     ),
                     const SizedBox(height: 20),
@@ -751,19 +786,23 @@ void showCreateObjectiveDialog({
                     DropdownButton<String>(
                       value: selectedObjectiveType,
                       isExpanded: true,
-                      items: ["Chaque jour", "Chaque semaine", "Chaque mois"].map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
+                      items: ["Chaque jour", "Chaque semaine", "Chaque mois"]
+                          .where((type) =>
+                              selectedPeriod == "7"
+                                  ? type == "Chaque jour"
+                                  : selectedPeriod == "30"
+                                      ? ["Chaque jour", "Chaque semaine"].contains(type)
+                                      : true)
+                          .map((String value) => DropdownMenuItem(value: value, child: Text(value)))
+                          .toList(),
                       onChanged: (String? newValue) {
-                        setState(() => selectedObjectiveType = newValue!);
+                        setState(() {
+                          selectedObjectiveType = newValue!;
+                        });
                       },
                     ),
                     const SizedBox(height: 20),
 
-                    // 🟣 Sélection des modules
                     const Text(
                       'Modules',
                       style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
@@ -777,40 +816,11 @@ void showCreateObjectiveDialog({
                             title: const Text("Compteur", style: TextStyle(fontSize: 12, fontFamily: 'Nunito')),
                             value: selectedModules["counter"],
                             onChanged: (bool? value) {
-                              setState(() => selectedModules["counter"] = value!);
+                              setState(() {
+                                selectedModules["counter"] = value!;
+                                if (value) selectedModules["checkbox"] = false;
+                              });
                             },
-                            controlAffinity: ListTileControlAffinity.leading,
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
-                        Expanded(
-                          child: CheckboxListTile(
-                            title: const Text("Chrono", style: TextStyle(fontSize: 12, fontFamily: 'Nunito')),
-                            value: selectedModules["chrono"],
-                            onChanged: (bool? value) {
-                              setState(() => selectedModules["chrono"] = value!);
-                            },
-                            controlAffinity: ListTileControlAffinity.leading,
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CheckboxListTile(
-                            title: const Text("Rappel", style: TextStyle(fontSize: 12, fontFamily: 'Nunito')),
-                            value: selectedModules["reminder"],
-                            onChanged: (bool? value) {
-                              setState(() => selectedModules["reminder"] = value!);
-                            },
-                            controlAffinity: ListTileControlAffinity.leading,
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
                           ),
                         ),
                         Expanded(
@@ -818,58 +828,76 @@ void showCreateObjectiveDialog({
                             title: const Text("Checkbox", style: TextStyle(fontSize: 12, fontFamily: 'Nunito')),
                             value: selectedModules["checkbox"],
                             onChanged: (bool? value) {
-                              setState(() => selectedModules["checkbox"] = value!);
+                              setState(() {
+                                selectedModules["checkbox"] = value!;
+                                if (value) selectedModules["counter"] = false;
+                              });
                             },
-                            controlAffinity: ListTileControlAffinity.leading,
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
                           ),
                         ),
                       ],
                     ),
 
+                    if (selectedModules["counter"] == true)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Définir un objectif personnalisé",
+                            style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            keyboardType: TextInputType.number,
+                            controller: objectiveCountController,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Color(0xFFEDEDED)),
+                              ),
+                              hintText: "Ex : 10",
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Unité de l'objectif",
+                            style: TextStyle(fontSize: 14, fontFamily: 'Nunito', color: Color(0xFF666666)),
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: unitController,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Color(0xFFEDEDED)),
+                              ),
+                              hintText: "Ex : km, pages, verres",
+                            ),
+                          ),
+                        ],
+                      ),
+
                     const SizedBox(height: 20),
 
-                    // 🟣 Bouton Ajouter
-                    Center(
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.6,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFB9ADFF), Color(0xFF9381FF)],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: TextButton(
-                          onPressed: () async {
-                            if (objectiveNameController.text.isNotEmpty) {
-                              Map<String, dynamic> nouvelObjectif = {
-                                "nom": objectiveNameController.text,
-                                "periode": selectedPeriod,
-                                "type": selectedObjectiveType,
-                                "modules": selectedModules,
-                              };
+                    ElevatedButton(
+                      onPressed: () {
+                        addObjectiveToAPI({
+                          "nom": objectiveNameController.text,
+                          "periode": selectedPeriod,
+                          "type": selectedObjectiveType,
+                          "modules": selectedModules,
+                          "total": int.tryParse(objectiveCountController.text) ?? 1,
+                          "unite_compteur": unitController.text,
+                        });
 
-                              await addObjectiveToAPI(nouvelObjectif);
-                              Navigator.of(context).pop();
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Veuillez entrer un nom d'objectif."),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          },
-                          child: const Text(
-                            "Ajouter l'objectif",
-                            style: TextStyle(fontFamily: 'NunitoBold', fontSize: 14, color: Color(0xFFFBFBFB)),
-                          ),
-                        ),
-                      ),
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text("Ajouter l'objectif"),
                     ),
                   ],
                 ),
@@ -881,6 +909,16 @@ void showCreateObjectiveDialog({
     },
   );
 }
+
+int calculateDaysCompleted(List<dynamic> historique) {
+  if (historique.isEmpty) return 0;
+
+  // Convertir les entrées en un Set de String
+  Set<String> joursRealises = historique.map((entry) => entry["date"].toString()).toSet();
+  
+  return joursRealises.length;
+}
+
 
 
   Widget _buildResourcesSection() {
@@ -918,4 +956,63 @@ void showCreateObjectiveDialog({
       ],
     );
   }
+
+  void _decrementCounter(Map<String, dynamic> objectif) {
+    setState(() {
+      if (objectif["compteur"] > 0) {
+        objectif["compteur"]--;
+      }
+    });
+
+    // Enregistrement de la progression via l'API
+    _addProgressToAPI(objectif["id"], {"compteur": -1});
+  }
+
+  void _incrementCounter(Map<String, dynamic> objectif) {
+    setState(() {
+      objectif["compteur"]++;
+    });
+
+    // Enregistrement de la progression via l'API
+    _addProgressToAPI(objectif["id"], {"compteur": 1});
+  }
+
+
+  Map<int, Timer?> _chronoTimers = {};  // Stocke les timers actifs
+  Map<int, int> _chronoValues = {}; // Stocke les secondes écoulées
+  Map<int, bool> _chronoActive = {}; // Stocke l’état du chrono
+
+void _toggleChrono(Map<String, dynamic> objectif) {
+  int objectifId = objectif["id"];
+
+  if (_chronoActive[objectifId] == true) {
+    // Arrêter le chrono
+    _chronoTimers[objectifId]?.cancel();
+    _chronoActive[objectifId] = false;
+
+    // Enregistrer le temps total écoulé dans l'API
+    int elapsedTime = _chronoValues[objectifId] ?? 0;
+    _addProgressToAPI(objectifId, {"chrono": elapsedTime});
+  } else {
+    // Démarrer le chrono
+    _chronoActive[objectifId] = true;
+    _chronoTimers[objectifId] = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        _chronoValues[objectifId] = (_chronoValues[objectifId] ?? 0) + 1;
+      });
+    });
+  }
+
+  setState(() {}); // Met à jour l'interface
+}
+
+
+  String _formatTime(int totalSeconds) {
+    int hours = totalSeconds ~/ 3600;
+    int minutes = (totalSeconds % 3600) ~/ 60;
+    int seconds = totalSeconds % 60;
+
+    return "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+  }
+
 }

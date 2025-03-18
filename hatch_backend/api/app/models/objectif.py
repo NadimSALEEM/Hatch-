@@ -23,10 +23,10 @@ class Objectif(Base):
     habit_id = Column(Integer, nullable=False)
     user_id = Column(Integer, nullable=False)
     nom = Column(String, nullable=False)  # Nom de l'objectif
-
+    unite_compteur = Column(String, nullable=False)  # Unité de mesure du compteur
     compteur = Column(Integer, default=0)  # Progression actuelle
     total = Column(Integer, nullable=False)  # Objectif final
-    unite_compteur = Column(String, nullable=False)  # Unité (ex: "pompes", "min")
+    score_global = Column(Integer, default=0)  # score_global de l'objectif
 
     statut = Column(Integer, nullable=False, default=1)  # 0 = en pause, 1 = actif
     debut = Column(DateTime, nullable=True)  # Date de début de l'objectif
@@ -45,7 +45,7 @@ class Objectif(Base):
     """
 
     # Stocker l'historique des progrès
-    historique_progression = Column(JSON, default=[])
+    historique_progression = Column(JSON, default=lambda: [])
     """
     Exemple :
     [
@@ -68,8 +68,7 @@ class CreerObjectif(BaseModel):
     unite_compteur: str
     modules: Dict[str, bool] = Field(default_factory=dict)  # Modules sélectionnés
     rappel_heure: Optional[str] = None  # Heure de rappel
-    historique_progression: List[Dict[str, int]] = Field(default_factory=list)  # Historique des progrès
-
+    historique_progression: List[Dict[str, str | int]] = Field(default_factory=list)
 
 class LireObjectif(BaseModel):
     id: int
@@ -77,12 +76,13 @@ class LireObjectif(BaseModel):
     user_id: Optional[int] = None
     nom: Optional[str] = None
     compteur: Optional[int] = None
-    total: Optional[int] = None
     unite_compteur: Optional[str] = None
+    total: Optional[int] = None
+    score_global : Optional[int] = None
     statut: Optional[int] = None
     debut: Optional[datetime.datetime] = None
     modules: Dict[str, bool] = Field(default_factory=dict)  # Ajouté pour voir les modules
-    historique_progression: List[Dict[str, int]] = Field(default_factory=list)  # Ajouté pour suivre l'historique
+    historique_progression: List[Dict[str, str | int]]  = Field(default_factory=list)  # Ajouté pour suivre l'historique
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -95,7 +95,7 @@ class ModifierObjectif(BaseModel):
     unite_compteur: Optional[str] = None
     statut: Optional[int] = None
     modules: Optional[Dict[str, bool]] = None  # Ajouté pour pouvoir modifier les modules
-    historique_progression: Optional[List[Dict[str, int]]] = None  # Modifier l'historique si besoin
+    historique_progression: List[Dict[str, str | int]]  = None  # Modifier l'historique si besoin
 
 
 # Création des tables avec gestion des erreurs

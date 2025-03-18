@@ -1,11 +1,11 @@
 meta {
-  name: Create Habit
+  name: Add progress
   type: http
-  seq: 1
+  seq: 6
 }
 
 post {
-  url: http://localhost:8080/habits/create
+  url: http://localhost:8080/habits/1/objectifs/1/addprogress
   body: json
   auth: none
 }
@@ -16,11 +16,6 @@ headers {
 
 body:json {
   {
-      "nom": "nqsdow",
-      "desc": "dsqd",
-      "statut": 1,
-      "freq": "Quotifdien",
-      "prio": "haute",
-      "labels" : ["yg"]
+    "valeur": 1
   }
 }
