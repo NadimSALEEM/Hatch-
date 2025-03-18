@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hatch/Pages/app_routes.dart';
 import 'package:hatch/Services/auth_guard.dart';
-
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(const MainApp());
@@ -14,6 +14,16 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      locale: const Locale('fr', 'FR'), // Définit la langue par défaut en français
+      supportedLocales: const [
+        Locale('fr', 'FR'),
+        Locale('en', 'US'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate, // Ajoute les traductions pour Material
+        GlobalWidgetsLocalizations.delegate, // Ajoute les traductions des widgets
+        GlobalCupertinoLocalizations.delegate, // Ajoute les traductions pour iOS (Cupertino)
+      ],
       initialRoute: '/', // Définir l'écran de démarrage
       routes: {
         '/': (context) => Bienvenue1(), // Routes publiques
@@ -38,9 +48,9 @@ class MainApp extends StatelessWidget {
 
         '/parametres_habitude': (context) => AuthGuard(page: ParametresHabitude()),
         '/post_creation_habitude': (context) => AuthGuard(page: PostCreationHabitude()),
-        '/progres_habitude': (context) => AuthGuard(page: ProgresHabitude()),
         '/toutes_les_habitudes': (context) => AuthGuard(page: ToutesLesHabitudes()),
 
+        '/progres_habitude': (context) => AuthGuard(page: ProgressHabitude()),
         '/tous_les_objectifs': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
           return AuthGuard(page: TousLesObjectifs(habitId: args['habitId']));
