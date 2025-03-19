@@ -32,6 +32,8 @@ flutter:
     - assets/images/Habitude/habitCreated.png
     - assets/images/Habitude/changeObjective.png
     - assets/images/Habitude/deleteOk.png
+    - assets/images/coach/Coach.png
+    - assets/images/coach/fleches.png
 
   fonts:
     - family: BricolageGrotesqueBold
