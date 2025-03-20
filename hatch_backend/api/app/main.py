@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import habit, user, auth, objectif  # Importer les nouveaux routeurs
+from .routers import habit, user, auth, objectif, coach  # Importer les nouveaux routeurs
 
 app = FastAPI()
 
@@ -21,7 +21,7 @@ app.include_router(auth.router)  # Authentification
 app.include_router(user.router)  # Gestion des utilisateurs
 app.include_router(habit.router)  # Gestion des habitudes
 app.include_router(objectif.router) # Gestion des objectifs
-# app.include_router(coach.router)  # Gestion des recommandations du coach
+app.include_router(coach.router)  # Gestion des recommandations du coach
 
 
 @app.exception_handler(RequestValidationError)
