@@ -46,7 +46,7 @@ class MainApp extends StatelessWidget {
           return AuthGuard(page: TousLesObjectifs(habitId: args['habitId']));
         },
         
-        '/choix_coach': (context) => AuthGuard(page: ChoixCoach()),
+        '/choix_coach': (context) => AuthGuard(page: CoachListPage()),
         '/coach': (context) => AuthGuard(page: Coach()),
       },
       onUnknownRoute: (settings) { // Gestion des erreurs 404
