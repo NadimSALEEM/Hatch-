@@ -3,6 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:jwt_decode/jwt_decode.dart'; // ← à ajouter dans pubspec.yaml
+
 
 class Coach extends StatefulWidget {
   const Coach({Key? key}) : super(key: key);
@@ -42,6 +44,7 @@ class _CoachState extends State<Coach> {
       'description':
           'Se rendre régulièrement à la salle de sport pour pratiquer des exercices physiques et maintenir une bonne condition physique.',
       'tags': ['Fitness', 'Bien-être'],
+      'habitId': 1,
     },
   ];
 
@@ -720,7 +723,9 @@ class _CoachState extends State<Coach> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      // Ajout de l’objectif à la liste de l’utilisateur
+                      final objectiveData =
+                          objectiveRecommendations[currentObjectiveIndex];
+                      addObjective(objectiveData, context);
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -795,16 +800,85 @@ Future<void> addHabit(
       },
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
       print("Coach mis à jour avec succès");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Coach assigné avec succès!")),
+        SnackBar(content: Text("Habitude assignée avec succès!")),
       );
     } else {
       print("Erreur lors de la mise à jour : ${response.data}");
     }
   } catch (e) {
     print("Erreur Dio : $e");
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Erreur réseau ou serveur.")),
+      );
+    }
+  }
+}
+
+Future<void> addObjective(Map<String, dynamic> objectiveData, BuildContext context) async {
+  final storage = FlutterSecureStorage();
+  String? token = await storage.read(key: "jwt_token");
+
+  if (token == null) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Utilisateur non authentifié")),
+      );
+    }
+    return;
+  }
+
+  final int habitId = objectiveData["habitId"];
+  final Dio dio = Dio();
+
+  try {
+    final url = "http://localhost:8080/habits/$habitId/objectifs/create";
+
+    final response = await dio.post(
+      url,
+      options: Options(
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ),
+      data: {
+        // ❌ PAS besoin d’envoyer user_id ici
+        "habit_id": habitId,
+        "nom": objectiveData["objectiveName"],
+        "statut": 1,
+        "compteur": 0,
+        "total": 10,
+        "unite_compteur": "fois",
+        "modules": {
+          "compteur": true,
+          "checkbox": false,
+          "chrono": false,
+          "rappel": false,
+        },
+        "historique_progression": [],
+        "rappel_heure": null,
+      },
+    );
+
+    if (response.statusCode == 201) {
+      print("✅ Objectif ajouté avec succès");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Objectif ajouté avec succès !")),
+        );
+      }
+    } else {
+      print("❌ Erreur lors de l'ajout : ${response.data}");
+    }
+  } catch (e) {
+    print("🔥 Erreur Dio : $e");
+    if (e is DioException && e.response != null) {
+      print("🪵 Réponse backend : ${e.response!.data}");
+    }
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Erreur réseau ou serveur.")),

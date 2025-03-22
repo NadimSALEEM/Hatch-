@@ -60,7 +60,7 @@ class Objectif(Base):
 
 class CreerObjectif(BaseModel):
     habit_id: int
-    user_id: int
+    user_id: Optional[int]
     nom: str
     statut: int
     compteur: int = 0  # Valeur par défaut
