@@ -16,6 +16,12 @@ app.add_middleware(
     allow_headers=["*"],  # Autorise tous les headers HTTP
 )
 
+origins = [
+    "http://localhost:5000",        # Flutter Web local
+    "http://127.0.0.1:5000",
+    "http://192.168.1.42:5000",     # ← Remplace ici par TON IP locale exacte
+]
+
 # Inclusion des routeurs
 app.include_router(auth.router)  # Authentification
 app.include_router(user.router)  # Gestion des utilisateurs

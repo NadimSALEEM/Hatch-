@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Coach extends StatefulWidget {
   const Coach({Key? key}) : super(key: key);
@@ -509,7 +513,6 @@ class _CoachState extends State<Coach> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Icône
                 Image.asset(
                   'assets/images/coach_popup.png',
                   width: 70,
@@ -517,7 +520,6 @@ class _CoachState extends State<Coach> {
                   fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 2),
-
                 const Text(
                   "Acceptez-vous cette suggestion ?",
                   style: TextStyle(
@@ -529,7 +531,6 @@ class _CoachState extends State<Coach> {
                 ),
                 const SizedBox(height: 16),
 
-                // Carte recommandation
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -561,13 +562,17 @@ class _CoachState extends State<Coach> {
                 ),
                 const SizedBox(height: 25),
 
-                // Bouton Accepter
+                // ✅ Appel de addHabit ici
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      //Ajout de l'habitude à la liste d'habitudes de l'utilisateur
+                      final habitData = {
+                        'name': habitName,
+                        'tags': tags,
+                      };
+                      addHabit(habitData, context);
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -589,7 +594,6 @@ class _CoachState extends State<Coach> {
 
                 const SizedBox(height: 10),
 
-                // Bouton Annuler
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: const Text(
@@ -756,5 +760,55 @@ class _CoachState extends State<Coach> {
         );
       },
     );
+  }
+}
+
+Future<void> addHabit(
+    Map<String, dynamic> habitData, BuildContext context) async {
+  final storage = FlutterSecureStorage();
+  String? token = await storage.read(key: "jwt_token");
+
+  if (token == null) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Utilisateur non authentifié")),
+      );
+    }
+    return;
+  }
+
+  final Dio dio = Dio();
+
+  try {
+    final response = await dio.post(
+      "http://localhost:8080/habits/create", // 🔁 Remplace par ton IP locale
+      options: Options(
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ),
+      data: {
+        "nom": habitData["name"],
+        "statut": 1,
+        "labels": habitData["tags"],
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print("Coach mis à jour avec succès");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Coach assigné avec succès!")),
+      );
+    } else {
+      print("Erreur lors de la mise à jour : ${response.data}");
+    }
+  } catch (e) {
+    print("Erreur Dio : $e");
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Erreur réseau ou serveur.")),
+      );
+    }
   }
 }
