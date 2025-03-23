@@ -88,6 +88,58 @@ class _ChoixCoachPageState extends State<CoachListPage> {
     }
   }
 
+  void _showConfirmationDialog(String currentCoachName, String newCoachName, int newCoachId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.swap_horiz, size: 48),
+                const SizedBox(height: 20),
+                Text(
+                  "Voulez-vous changer\n$currentCoachName pour $newCoachName ?",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  "Vous pourrez revenir sur\nvotre choix plus tard",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF8F7CF8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      assignCoach(newCoachId);
+                    },
+                    child: const Text("Confirmer", style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text("Annuler", style: TextStyle(color: Colors.black)),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,12 +152,27 @@ class _ChoixCoachPageState extends State<CoachListPage> {
                 final coach = coachList[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ListTile(
-                    title: Text(coach['nom'] ?? 'Coach inconnu'),
-                    subtitle: Text("${coach['mbti'] ?? 'N/A'}\n${coach['desc'] ?? 'N/A'}"),
-                    trailing: ElevatedButton(
-                      child: const Text("Choisir"),
-                      onPressed: () => assignCoach(coach['id']),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(coach['nom'] ?? 'Coach inconnu', style: Theme.of(context).textTheme.titleLarge),
+                        const SizedBox(height: 4),
+                        Text("(${coach['mbti'] ?? 'N/A'})"),
+                        const SizedBox(height: 4),
+                        Text("${coach['desc'] ?? 'N/A'}"),
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: ElevatedButton(
+                            child: const Text("Choisir"),
+                            onPressed: () {
+                              _showConfirmationDialog("Coach actuel", coach['nom'], coach['id']);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
