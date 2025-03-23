@@ -30,8 +30,8 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(data={"sub": utilisateur.email})
-    refresh_token = create_refresh_token(data={"sub": utilisateur.email})
+    access_token = create_access_token(data={"sub": utilisateur.email, "id": utilisateur.id})
+    refresh_token = create_refresh_token(data={"sub": utilisateur.email, "id": utilisateur.id})
 
     # Stocker le refresh_token dans un cookie HTTPOnly
     response = Response()
@@ -71,7 +71,7 @@ def refresh_access_token(request: Request, db: Session = Depends(get_db)):
         logging.warning("Utilisateur non trouvé pour le refresh")
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
 
-    new_access_token = create_access_token(data={"sub": email})
+    new_access_token = create_access_token(data={"sub": utilisateur.email, "id": utilisateur.id})
 
     return {"access_token": new_access_token, "token_type": "bearer"}
 
@@ -128,8 +128,8 @@ def register_user(user: CreerUtilisateur, db: Session = Depends(get_db)):
     db.refresh(new_user)
 
     # Générer l'Access Token & Refresh Token
-    access_token = create_access_token(data={"sub": new_user.email})
-    refresh_token = create_refresh_token(data={"sub": new_user.email})
+    access_token = create_access_token(data={"sub": new_user.email, "id": new_user.id})
+    refresh_token = create_refresh_token(data={"sub": new_user.email, "id": new_user.id})
 
     logging.info("Utilisateur créé avec succès")
 

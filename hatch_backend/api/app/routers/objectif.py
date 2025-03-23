@@ -84,10 +84,10 @@ def creer_objectif(
     if not utilisateur_db:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
 
-    user_id = utilisateur.get("id")  # Récupérer l'ID utilisateur depuis le token
+    userId = utilisateur.get("id")  # Récupérer l'ID utilisateur depuis le token
 
     nouvel_objectif = Objectif(
-        user_id=user_id,
+        user_id=userId,
         nom=objectif_data.nom,
         statut=objectif_data.statut,
         compteur=objectif_data.compteur,

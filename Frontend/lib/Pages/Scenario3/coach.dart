@@ -19,6 +19,21 @@ class _CoachState extends State<Coach> {
   int currentIndex = 1;
   int _selectedIndex = 1;
 
+  Future<int?> getUserIdFromToken() async {
+    final storage = FlutterSecureStorage();
+    String? token = await storage.read(key: "jwt_token");
+
+    if (token == null) return null;
+
+    Map<String, dynamic> payload = Jwt.parseJwt(token);
+
+    if (payload.containsKey("id")) {
+      return payload["id"];
+    }
+
+    return null;
+  }
+
   //Liste pré-scriptée de recommandations habitudes
   final List<Map<String, dynamic>> recommendations = [
     {
@@ -830,6 +845,16 @@ class _CoachState extends State<Coach> {
       return;
     }
 
+    int? userId = await getUserIdFromToken();
+    if (userId == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("ID utilisateur introuvable.")),
+        );
+      }
+      return;
+    }
+
     final int habitId = objectiveData["habitId"];
     final Dio dio = Dio();
 
@@ -844,6 +869,7 @@ class _CoachState extends State<Coach> {
             },
           ),
           data: {
+            "user_id": userId,
             "nom": objectiveData['objectiveName'],
             "statut": 0,
             "compteur": 0,
