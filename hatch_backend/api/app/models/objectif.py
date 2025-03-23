@@ -20,7 +20,7 @@ class Objectif(Base):
     __tablename__ = "objectifs"
 
     id = Column(Integer, primary_key=True, index=True)
-    habit_id = Column(Integer, nullable=False)
+    habit_id = Column(Integer)
     user_id = Column(Integer, nullable=False)
     nom = Column(String, nullable=False)  # Nom de l'objectif
     unite_compteur = Column(String, nullable=False)  # Unité de mesure du compteur
@@ -33,7 +33,7 @@ class Objectif(Base):
     dernier_update = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
     # JSON pour stocker les modules interactifs activés 
-    modules = Column(JSON, default={})
+    modules = Column(JSON, default={}, nullable=True)
     """
     Exemple :
     {
@@ -59,13 +59,12 @@ class Objectif(Base):
 
 
 class CreerObjectif(BaseModel):
-    habit_id: int
     user_id: Optional[int]
     nom: str
     statut: int
-    compteur: int = 0  # Valeur par défaut
+    compteur: Optional[int] = 0  # Valeur par défaut
     total: int
-    unite_compteur: str
+    unite_compteur: Optional[str]
     modules: Dict[str, bool] = Field(default_factory=dict)  # Modules sélectionnés
     rappel_heure: Optional[str] = None  # Heure de rappel
     historique_progression: List[Dict[str, str | int]] = Field(default_factory=list)
