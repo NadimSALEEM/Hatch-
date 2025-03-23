@@ -3,7 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:jwt_decode/jwt_decode.dart'; // ← à ajouter dans pubspec.yaml
+import 'package:jwt_decode/jwt_decode.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Coach extends StatefulWidget {
   const Coach({Key? key}) : super(key: key);
@@ -19,7 +20,24 @@ class _CoachState extends State<Coach> {
   int currentIndex = 1;
   int _selectedIndex = 1;
 
-    @override
+  String coachImagePath = "";
+
+  String getCoachImagePath(int coachId) {
+    switch (coachId) {
+      case 1:
+        return '../../../assets/images/coach/1.png';
+      case 2:
+        return '../../../assets/images/coach/2.png';
+      case 3:
+        return '../../../assets/images/coach/3.png';
+      case 4:
+        return '../../../assets/images/coach/4.png';
+      default:
+        return '../../../assets/images/coach/1.png'; // fallback
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     _verifierCoachAssigne();
@@ -48,6 +66,10 @@ class _CoachState extends State<Coach> {
           if (context.mounted) {
             Navigator.pushReplacementNamed(context, '/questionnaire');
           }
+        } else {
+          setState(() {
+            coachImagePath = getCoachImagePath(coachAssigne);
+          });
         }
       }
     } catch (e) {
@@ -99,8 +121,7 @@ class _CoachState extends State<Coach> {
     {
       'objectiveName': 'Courir 3km',
       'relatedHabit': 'Activité physique',
-      'description':
-          'Courir 3km sans pause',
+      'description': 'Courir 3km sans pause',
       'tags': ['Fitness', 'Bien-être'],
       'habitId': 2,
     },
@@ -181,11 +202,24 @@ class _CoachState extends State<Coach> {
 
             // Image du coach
             Center(
-              child: Image.asset(
-                'assets/images/coach/Coach.png',
-                width: double.infinity,
-                height: 280,
-                fit: BoxFit.fitWidth,
+              child: Stack(
+                children: [
+                  SvgPicture.asset(
+                    '../../../assets/images/Vector.svg',
+                    width: double.infinity,
+                    height: 240,
+                    fit: BoxFit.fitWidth,
+                  ),
+                  Positioned(
+                    bottom: 0, // marge en bas
+                    left: 24, // marge à gauche
+                    child: Image.asset(
+                      coachImagePath,
+                      height: 160,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ],
               ),
             ),
 
