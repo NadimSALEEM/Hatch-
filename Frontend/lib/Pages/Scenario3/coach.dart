@@ -215,7 +215,7 @@ class _CoachState extends State<Coach> {
                     left: 24, // marge à gauche
                     child: Image.asset(
                       coachImagePath,
-                      height: 160,
+                      height: 220,
                       fit: BoxFit.contain,
                     ),
                   ),

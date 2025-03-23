@@ -14,6 +14,21 @@ class _QuestionnaireState extends State<Questionnaire> {
   int _currentPage = 0;
   final int _totalSections = 4;
 
+  String getCoachImagePath(String coachName) {
+    switch (coachName) {
+      case "Coach Diplomate":
+        return "../../../assets/images/coach/1.png";
+      case "Coach Explorateur":
+        return "../../../assets/images/coach/2.png";
+      case "Coach Sentinelle":
+        return "../../../assets/images/coach/3.png";
+      case "Coach Analyste":
+        return "../../../assets/images/coach/4.png";
+      default:
+        return "../../../assets/images/coach/1.png"; // fallback générique
+    }
+  }
+
   Map<int, bool?> responses = {}; // Stocke les réponses au questionnaire
 
   //Affirmations
@@ -79,10 +94,26 @@ class _QuestionnaireState extends State<Questionnaire> {
 
   String calculerMBTI(Map<int, bool?> responses) {
     List<String> questionTypes = [
-      "I", "E", "I", "E", "I",
-      "N", "S", "N", "S", "N",
-      "F", "T", "F", "T", "F",
-      "P", "J", "P", "J", "P"
+      "I",
+      "E",
+      "I",
+      "E",
+      "I",
+      "N",
+      "S",
+      "N",
+      "S",
+      "N",
+      "F",
+      "T",
+      "F",
+      "T",
+      "F",
+      "P",
+      "J",
+      "P",
+      "J",
+      "P"
     ];
 
     int E = 0, I = 0, S = 0, N = 0, T = 0, F = 0, J = 0, P = 0;
@@ -90,25 +121,57 @@ class _QuestionnaireState extends State<Questionnaire> {
     for (int i = 0; i < 20; i++) {
       if (responses[i] == true) {
         switch (questionTypes[i]) {
-          case "E": E++; break;
-          case "I": I++; break;
-          case "S": S++; break;
-          case "N": N++; break;
-          case "T": T++; break;
-          case "F": F++; break;
-          case "J": J++; break;
-          case "P": P++; break;
+          case "E":
+            E++;
+            break;
+          case "I":
+            I++;
+            break;
+          case "S":
+            S++;
+            break;
+          case "N":
+            N++;
+            break;
+          case "T":
+            T++;
+            break;
+          case "F":
+            F++;
+            break;
+          case "J":
+            J++;
+            break;
+          case "P":
+            P++;
+            break;
         }
       } else {
         switch (questionTypes[i]) {
-          case "E": I++; break;
-          case "I": E++; break;
-          case "S": N++; break;
-          case "N": S++; break;
-          case "T": F++; break;
-          case "F": T++; break;
-          case "J": P++; break;
-          case "P": J++; break;
+          case "E":
+            I++;
+            break;
+          case "I":
+            E++;
+            break;
+          case "S":
+            N++;
+            break;
+          case "N":
+            S++;
+            break;
+          case "T":
+            F++;
+            break;
+          case "F":
+            T++;
+            break;
+          case "J":
+            P++;
+            break;
+          case "P":
+            J++;
+            break;
         }
       }
     }
@@ -138,11 +201,16 @@ class _QuestionnaireState extends State<Questionnaire> {
 
   int coachNameToId(String coachName) {
     switch (coachName) {
-      case "Coach Diplomate": return 1;
-      case "Coach Explorateur": return 2;
-      case "Coach Sentinelle": return 3;
-      case "Coach Analyste": return 4;
-      default: return 0;
+      case "Coach Diplomate":
+        return 1;
+      case "Coach Explorateur":
+        return 2;
+      case "Coach Sentinelle":
+        return 3;
+      case "Coach Analyste":
+        return 4;
+      default:
+        return 0;
     }
   }
 
@@ -187,6 +255,7 @@ class _QuestionnaireState extends State<Questionnaire> {
     String coach = attribuerCoach(mbti);
 
     await updateCoach(coach);
+    String coachImage = getCoachImagePath(coach); // 👈 récupère le bon visuel
 
     showDialog(
       context: context,
@@ -203,32 +272,41 @@ class _QuestionnaireState extends State<Questionnaire> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Image.asset(
-                "assets/images/coach_attribue.png",
+                coachImage, // 👈 image dynamique
                 height: 110,
                 width: 110,
                 fit: BoxFit.contain,
               ),
               const SizedBox(height: 15),
-              Text("Un coach a bien été personnalisé:",
-                  style: TextStyle(
-                      fontFamily: "NunitoBold",
-                      fontSize: 18,
-                      color: Color(0xFF2F2F2F)),
-                  textAlign: TextAlign.center),
+              Text(
+                "Un coach a bien été personnalisé:",
+                style: TextStyle(
+                  fontFamily: "NunitoBold",
+                  fontSize: 18,
+                  color: Color(0xFF2F2F2F),
+                ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 18),
-              Text(coach,
-                  style: TextStyle(
-                      fontFamily: "NunitoBold",
-                      fontSize: 20,
-                      color: Color(0xFF2F2F2F)),
-                  textAlign: TextAlign.center),
+              Text(
+                coach,
+                style: TextStyle(
+                  fontFamily: "NunitoBold",
+                  fontSize: 20,
+                  color: Color(0xFF2F2F2F),
+                ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 18),
-              Text("Vous pourrez revenir sur votre choix plus tard",
-                  style: TextStyle(
-                      fontFamily: "Nunito",
-                      fontSize: 13,
-                      color: Color.fromARGB(138, 47, 47, 47)),
-                  textAlign: TextAlign.center),
+              Text(
+                "Vous pourrez revenir sur votre choix plus tard",
+                style: TextStyle(
+                  fontFamily: "Nunito",
+                  fontSize: 13,
+                  color: Color.fromARGB(138, 47, 47, 47),
+                ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: () {
@@ -245,11 +323,14 @@ class _QuestionnaireState extends State<Questionnaire> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
-                  child: Text("OK",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: "Nunito",
-                          fontSize: 15)),
+                  child: Text(
+                    "OK",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: "Nunito",
+                      fontSize: 15,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -271,7 +352,8 @@ class _QuestionnaireState extends State<Questionnaire> {
         },
         children: [
           _buildWelcomePage(),
-          _buildSectionPage("Extraversion (E) - Introversion (I)", 1,isFirstSection: true),
+          _buildSectionPage("Extraversion (E) - Introversion (I)", 1,
+              isFirstSection: true),
           _buildSectionPage("Sensation (S) - Intuition (N)", 2),
           _buildSectionPage("Pensée (T) - Sentiment (F)", 3),
           _buildSectionPage("Jugement (J) - Perception (P)", 4, isLast: true),
