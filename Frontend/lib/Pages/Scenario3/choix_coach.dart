@@ -1,118 +1,116 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: CoachListPage(),
-    );
-  }
-}
+import 'package:dio/dio.dart';
 
 class CoachListPage extends StatefulWidget {
+  const CoachListPage({Key? key}) : super(key: key);
+
   @override
-  _CoachListPageState createState() => _CoachListPageState();
+  _ChoixCoachPageState createState() => _ChoixCoachPageState();
 }
 
-class _CoachListPageState extends State<CoachListPage> {
-  final List<Map<String, dynamic>> coachs = [
-    {'coachName': 'Albert', 'mbti': "INFP", 'id': 0},
-    {'coachName': 'Activité physique', 'mbti': "INFJ", 'id': 1},
-    {'coachName': 'Sommeil', 'mbti': "ESTJ", 'id': 2},
-    {'coachName': 'Eren', 'mbti': "Jaeger", 'id': 3},
-  ];
+class _ChoixCoachPageState extends State<CoachListPage> {
+  final storage = const FlutterSecureStorage();
+  List<Map<String, dynamic>> coachList = [];
+  bool isLoading = true;
 
-  final _storage = FlutterSecureStorage();
-  final Dio _dio = Dio();
-
-  Future<String?> _getToken() async {
-    return await _storage.read(key: "jwt_token");
+  @override
+  void initState() {
+    super.initState();
+    loadCoachData();
   }
 
-  Future<void> assignCoach(int coachId) async {
-    String? token = await _getToken();
-    if (token == null) {
-      print("Utilisateur non authentifié");
-      return;
+  Future<void> loadCoachData() async {
+    String? token = await storage.read(key: "jwt_token");
+    if (token != null) {
+      try {
+        final data = await fetchCoachList(token);
+        setState(() {
+          coachList = data;
+          isLoading = false;
+        });
+      } catch (e) {
+        print("Erreur chargement coachs : $e");
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCoachList(String token) async {
+    final Dio dio = Dio();
+    final response = await dio.get(
+      "http://localhost:8080/coach/",
+      options: Options(
+        headers: {"Authorization": "Bearer $token"},
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      return List<Map<String, dynamic>>.from(response.data);
+    } else {
+      throw Exception("Erreur lors de la récupération des coachs : ${response.statusCode}");
+    }
+  }
+
+  void assignCoach(int coachId) async {
+    String? token = await storage.read(key: "jwt_token");
+    if (token == null) return;
 
     try {
-      final response = await _dio.put(
+      final Dio dio = Dio();
+      await dio.put(
         "http://localhost:8080/users/me/update",
-        options: Options(headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token"
-        }),
-        data: {"coach_assigne": coachId},
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+          },
+        ),
+        data: {
+          "coach_id": coachId,
+        },
       );
 
-      if (response.statusCode == 200) {
-        print("Coach mis à jour avec succès");
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Coach assigné avec succès!")),
+          const SnackBar(content: Text("Coach assigné avec succès !")),
         );
-      } else {
-        print("Erreur lors de la mise à jour : ${response.data}");
       }
     } catch (e) {
-      print("Erreur de connexion : $e");
+      print("Erreur assignation coach : $e");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Erreur lors de l'assignation du coach.")),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFfcfcff),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Color(0xFF2F2F2F)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text('Liste des Coachs',
-            style: TextStyle(fontSize: 20, fontFamily: 'NunitoBold', color: Color(0xFF2F2F2F))),
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(color: Color(0xFFE0E0E0), thickness: 1, height: 1),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: ListView.builder(
-          itemCount: coachs.length,
-          itemBuilder: (context, index) {
-            return Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 2,
-              margin: EdgeInsets.symmetric(vertical: 10),
-              child: ListTile(
-                contentPadding: EdgeInsets.all(15),
-                title: Text(
-                  coachs[index]['coachName'],
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF2F2F2F)),
-                ),
-                subtitle: Text(
-                  coachs[index]['mbti'],
-                  style: TextStyle(fontSize: 14, color: Color(0xFF6F6F6F)),
-                ),
-                leading: CircleAvatar(
-                  backgroundColor: Color(0xFFAB96FF),
-                  child: Icon(Icons.person, color: Colors.white),
-                ),
-                trailing: IconButton(
-                  icon: Icon(Icons.check, color: Color(0xFFAB96FF)),
-                  onPressed: () => assignCoach(coachs[index]['id']),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+      appBar: AppBar(title: const Text("Choisir un coach")),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: coachList.length,
+              itemBuilder: (context, index) {
+                final coach = coachList[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ListTile(
+                    title: Text(coach['nom'] ?? 'Coach inconnu'),
+                    subtitle: Text("${coach['mbti'] ?? 'N/A'}\n${coach['desc'] ?? 'N/A'}"),
+                    trailing: ElevatedButton(
+                      child: const Text("Choisir"),
+                      onPressed: () => assignCoach(coach['id']),
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }

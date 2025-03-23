@@ -1,0 +1,19 @@
+meta {
+  name: create coach
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/coach/create
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nom": "Naruto Uzumaki",
+    "mbti": "ENFP",
+    "desc": "Ninja et hokage de konoha"
+  }
+}

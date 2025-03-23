@@ -53,6 +53,17 @@ def lire_coach(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur interne du serveur: {str(e)}")
 
+@router.get("/", response_model=List[LireCoach])
+def get_all_coachs(db: Session = Depends(get_db)):
+    """
+    Récupère la liste complète des coachs.
+    """
+    try:
+        return db.query(Coach).all()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/create", response_model=CreerCoach, status_code=status.HTTP_201_CREATED)
 def creer_coach(
     coach_data: CreerCoach,
