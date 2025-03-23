@@ -60,6 +60,14 @@ class _CoachState extends State<Coach> {
       'tags': ['Fitness', 'Bien-être'],
       'habitId': 1,
     },
+    {
+      'objectiveName': 'Courir 3km',
+      'relatedHabit': 'Activité physique',
+      'description':
+          'Courir 3km sans pause',
+      'tags': ['Fitness', 'Bien-être'],
+      'habitId': 2,
+    },
   ];
 
 //Fonctions pour naviguer dans les carousels
@@ -856,10 +864,12 @@ class _CoachState extends State<Coach> {
     }
 
     final int habitId = objectiveData["habitId"];
+    print("habitId dans Flutter : $habitId");
     final Dio dio = Dio();
 
     try {
       final url = "http://localhost:8080/habits/$habitId/objectifs/create";
+      print(url);
 
       final response = await dio.post(url,
           options: Options(

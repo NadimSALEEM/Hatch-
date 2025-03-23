@@ -87,6 +87,7 @@ def creer_objectif(
     userId = utilisateur.get("id")  # Récupérer l'ID utilisateur depuis le token
 
     nouvel_objectif = Objectif(
+        habit_id=habitude_id,
         user_id=userId,
         nom=objectif_data.nom,
         statut=objectif_data.statut,
