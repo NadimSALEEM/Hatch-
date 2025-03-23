@@ -765,79 +765,26 @@ class _CoachState extends State<Coach> {
       },
     );
   }
-}
 
-Future<void> addHabit(
-    Map<String, dynamic> habitData, BuildContext context) async {
-  final storage = FlutterSecureStorage();
-  String? token = await storage.read(key: "jwt_token");
+  Future<void> addHabit(
+      Map<String, dynamic> habitData, BuildContext context) async {
+    final storage = FlutterSecureStorage();
+    String? token = await storage.read(key: "jwt_token");
 
-  if (token == null) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Utilisateur non authentifié")),
-      );
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Utilisateur non authentifié")),
+        );
+      }
+      return;
     }
-    return;
-  }
 
-  final Dio dio = Dio();
+    final Dio dio = Dio();
 
-  try {
-    final response = await dio.post(
-      "http://localhost:8080/habits/create", // 🔁 Remplace par ton IP locale
-      options: Options(
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ),
-      data: {
-        "nom": habitData["name"],
-        "statut": 1,
-        "labels": habitData["tags"],
-      },
-    );
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      print("Coach mis à jour avec succès");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Habitude assignée avec succès!")),
-      );
-    } else {
-      print("Erreur lors de la mise à jour : ${response.data}");
-    }
-  } catch (e) {
-    print("Erreur Dio : $e");
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Erreur réseau ou serveur.")),
-      );
-    }
-  }
-}
-
-Future<void> addObjective(
-    Map<String, dynamic> objectiveData, BuildContext context) async {
-  final storage = FlutterSecureStorage();
-  String? token = await storage.read(key: "jwt_token");
-
-  if (token == null) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Utilisateur non authentifié")),
-      );
-    }
-    return;
-  }
-
-  final int habitId = objectiveData["habitId"];
-  final Dio dio = Dio();
-
-  try {
-    final url = "http://localhost:8080/habits/$habitId/objectifs/create";
-
-    final response = await dio.post(url,
+    try {
+      final response = await dio.post(
+        "http://localhost:8080/habits/create", // 🔁 Remplace par ton IP locale
         options: Options(
           headers: {
             "Content-Type": "application/json",
@@ -845,43 +792,95 @@ Future<void> addObjective(
           },
         ),
         data: {
-          "user_id": 1,
-          "nom": "Aller à la salle de sport",
+          "nom": habitData["name"],
           "statut": 1,
-          "compteur": 0,
-          "total": 10,
-          "unite_compteur": "fois",
-          "modules": {
-            "compteur": true,
-            "checkbox": false,
-            "chrono": false,
-            "rappel": false
-          },
-          "rappel_heure": null,
-          "historique_progression": [
-            {"date": "2024-03-23", "valeur": 0}
-          ]
-        });
+          "labels": habitData["tags"],
+        },
+      );
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      print("✅ Objectif ajouté avec succès");
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Coach mis à jour avec succès");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Habitude assignée avec succès!")),
+        );
+      } else {
+        print("Erreur lors de la mise à jour : ${response.data}");
+      }
+    } catch (e) {
+      print("Erreur Dio : $e");
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Objectif ajouté avec succès !")),
+          const SnackBar(content: Text("Erreur réseau ou serveur.")),
         );
       }
-    } else {
-      print("⚠️ Erreur lors de l'ajout : ${response.data}");
     }
-  } catch (e) {
-    print("❌ Erreur Dio : $e");
-    if (e is DioException && e.response != null) {
-      print("🪵 Réponse backend : ${e.response!.data}");
+  }
+
+  Future<void> addObjective(
+      Map<String, dynamic> objectiveData, BuildContext context) async {
+    final storage = FlutterSecureStorage();
+    String? token = await storage.read(key: "jwt_token");
+
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Utilisateur non authentifié")),
+        );
+      }
+      return;
     }
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Erreur réseau ou serveur.")),
-      );
+
+    final int habitId = objectiveData["habitId"];
+    final Dio dio = Dio();
+
+    try {
+      final url = "http://localhost:8080/habits/$habitId/objectifs/create";
+
+      final response = await dio.post(url,
+          options: Options(
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          ),
+          data: {
+            "nom": objectiveData['objectiveName'],
+            "statut": 0,
+            "compteur": 0,
+            "total": 10,
+            "unite_compteur": "fois",
+            "modules": {
+              "compteur": true,
+              "checkbox": false,
+              "chrono": false,
+              "rappel": false
+            },
+            "rappel_heure": null,
+            "historique_progression": [
+              {"date": "2024-03-23", "valeur": 0}
+            ]
+          });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("✅ Objectif ajouté avec succès");
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Objectif ajouté avec succès !")),
+          );
+        }
+      } else {
+        print("⚠️ Erreur lors de l'ajout : ${response.data}");
+      }
+    } catch (e) {
+      print("❌ Erreur Dio : $e");
+      if (e is DioException && e.response != null) {
+        print("🪵 Réponse backend : ${e.response!.data}");
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Erreur réseau ou serveur.")),
+        );
+      }
     }
   }
 }

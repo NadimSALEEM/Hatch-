@@ -87,7 +87,7 @@ class _ChoixCoachPageState extends State<CoachListPage> {
           },
         ),
         data: {
-          "coach_id": coachId,
+          "coach_assigne": coachId,
         },
       );
 
@@ -168,7 +168,7 @@ class _ChoixCoachPageState extends State<CoachListPage> {
       fit: BoxFit.cover,
     );
 
-    final backgroundColor = isCurrent ? const Color(0xFF7E1E2A) : Colors.grey.shade100;
+    final backgroundColor = isCurrent ? const Color(0xFF9381FF) : Colors.grey.shade100;
     final textColor = isCurrent ? Colors.white : Colors.black;
 
     return Container(
