@@ -19,6 +19,42 @@ class _CoachState extends State<Coach> {
   int currentIndex = 1;
   int _selectedIndex = 1;
 
+    @override
+  void initState() {
+    super.initState();
+    _verifierCoachAssigne();
+  }
+
+  Future<void> _verifierCoachAssigne() async {
+    final storage = FlutterSecureStorage();
+    String? token = await storage.read(key: "jwt_token");
+
+    if (token == null) return;
+
+    try {
+      final Dio dio = Dio();
+      final response = await dio.get(
+        "http://localhost:8080/users/me",
+        options: Options(
+          headers: {"Authorization": "Bearer $token"},
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final userData = response.data;
+        final coachAssigne = userData["coach_assigne"];
+
+        if (coachAssigne == null || coachAssigne == 0) {
+          if (context.mounted) {
+            Navigator.pushReplacementNamed(context, '/questionnaire');
+          }
+        }
+      }
+    } catch (e) {
+      print("Erreur lors de la vérification du coach assigné: $e");
+    }
+  }
+
   Future<int?> getUserIdFromToken() async {
     final storage = FlutterSecureStorage();
     String? token = await storage.read(key: "jwt_token");
