@@ -12,6 +12,7 @@ class CoachListPage extends StatefulWidget {
 class _ChoixCoachPageState extends State<CoachListPage> {
   final storage = const FlutterSecureStorage();
   List<Map<String, dynamic>> coachList = [];
+  int? currentCoachId;
   bool isLoading = true;
 
   @override
@@ -25,8 +26,10 @@ class _ChoixCoachPageState extends State<CoachListPage> {
     if (token != null) {
       try {
         final data = await fetchCoachList(token);
+        final userData = await fetchUserData(token);
         setState(() {
           coachList = data;
+          currentCoachId = userData["coach_assigne"];
           isLoading = false;
         });
       } catch (e) {
@@ -54,6 +57,21 @@ class _ChoixCoachPageState extends State<CoachListPage> {
     }
   }
 
+  Future<Map<String, dynamic>> fetchUserData(String token) async {
+    final Dio dio = Dio();
+    final response = await dio.get(
+      "http://localhost:8080/users/me",
+      options: Options(
+        headers: {"Authorization": "Bearer $token"},
+      ),
+    );
+    if (response.statusCode == 200) {
+      return Map<String, dynamic>.from(response.data);
+    } else {
+      throw Exception("Erreur lors de la récupération de l'utilisateur");
+    }
+  }
+
   void assignCoach(int coachId) async {
     String? token = await storage.read(key: "jwt_token");
     if (token == null) return;
@@ -77,6 +95,7 @@ class _ChoixCoachPageState extends State<CoachListPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Coach assigné avec succès !")),
         );
+        loadCoachData();
       }
     } catch (e) {
       print("Erreur assignation coach : $e");
@@ -140,43 +159,99 @@ class _ChoixCoachPageState extends State<CoachListPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Choisir un coach")),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: coachList.length,
-              itemBuilder: (context, index) {
-                final coach = coachList[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(coach['nom'] ?? 'Coach inconnu', style: Theme.of(context).textTheme.titleLarge),
-                        const SizedBox(height: 4),
-                        Text("(${coach['mbti'] ?? 'N/A'})"),
-                        const SizedBox(height: 4),
-                        Text("${coach['desc'] ?? 'N/A'}"),
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: ElevatedButton(
-                            child: const Text("Choisir"),
-                            onPressed: () {
-                              _showConfirmationDialog("Coach actuel", coach['nom'], coach['id']);
-                            },
-                          ),
-                        ),
-                      ],
+  Widget buildCoachCard(Map<String, dynamic> coach, {bool isCurrent = false}) {
+    final coachId = coach['id'];
+    final image = Image.asset(
+      '../../../assets/images/coach/$coachId.png',
+      width: 80,
+      height: 80,
+      fit: BoxFit.cover,
+    );
+
+    final backgroundColor = isCurrent ? const Color(0xFF7E1E2A) : Colors.grey.shade100;
+    final textColor = isCurrent ? Colors.white : Colors.black;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(12.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          image,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  coach['nom'] ?? 'Coach inconnu',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  coach['desc'] ?? 'Pas de description.',
+                  style: TextStyle(color: textColor),
+                ),
+                if (!isCurrent) ...[
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _showConfirmationDialog("votre coach actuel", coach['nom'], coachId);
+                      },
+                      child: const Text("Choisir ce coach"),
                     ),
                   ),
-                );
-              },
+                ]
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentCoach = coachList.where((c) => c['id'] == currentCoachId).toList();
+    final otherCoaches = coachList.where((c) => c['id'] != currentCoachId).toList();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Changement de coach")),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text("Votre coach actuel :", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  ),
+                  if (currentCoach.isNotEmpty) buildCoachCard(currentCoach.first, isCurrent: true),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+                    child: Text("Autres coachs disponibles :", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  ),
+                  ...otherCoaches.map((c) => buildCoachCard(c)).toList(),
+                ],
+              ),
             ),
     );
   }
