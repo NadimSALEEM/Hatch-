@@ -137,3 +137,28 @@ def supprimer_coach(
     db.commit()
 
     return {"message": "Coach supprimé avec succès"}
+
+from sqlalchemy.orm import Session
+from app.db import SessionLocal
+from sqlalchemy.exc import SQLAlchemyError
+from app.models.coach import Coach
+
+
+# Fonction pour insérer des coachs statiques dans la base de données, réservée à l'administrateur, à appeler une seule fois
+def init_static_coachs():
+    db: Session = SessionLocal()
+    try:
+        if db.query(Coach).count() == 0:
+            static_coachs = [
+                Coach(id=1, nom="Nelson Tinelle", mbti="Sentinelle", desc="Logique, stratégique, indépendant, axé sur la compréhension et l'innovation."),
+                Coach(id=2, nom="Lady Plomate", mbti="Diplomate", desc="Empathique, idéaliste, communicatif, porté par les valeurs et les relations humaines."),
+                Coach(id=3, nom="Alex Plorateur", mbti="Explorateur", desc="Spontané, adaptable, curieux, aime l'action et vit dans l'instant présent."),
+                Coach(id=4, nom="Anna Liste", mbti="Analyse", desc="Fiable, organisé, responsable, attaché aux règles et à la stabilité.")
+            ]
+            db.bulk_save_objects(static_coachs)
+            db.commit()
+            print("Coachs statiques insérés avec succès.")
+    except SQLAlchemyError as e:
+        print(f"Erreur lors de l'insertion des coachs : {e}")
+    finally:
+        db.close()

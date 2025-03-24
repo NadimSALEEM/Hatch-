@@ -2,10 +2,14 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from app.routers import coach
 
 from .routers import habit, user, auth, objectif, coach  # Importer les nouveaux routeurs
 
 app = FastAPI()
+
+# Initialisation des coachs statiques
+coach.init_static_coachs()
 
 # Configuration du Middleware CORS (Autorisation des requêtes cross-origin)
 app.add_middleware(
@@ -16,11 +20,6 @@ app.add_middleware(
     allow_headers=["*"],  # Autorise tous les headers HTTP
 )
 
-origins = [
-    "http://localhost:5000",        # Flutter Web local
-    "http://127.0.0.1:5000",
-    "http://192.168.1.42:5000",     # ← Remplace ici par TON IP locale exacte
-]
 
 # Inclusion des routeurs
 app.include_router(auth.router)  # Authentification
