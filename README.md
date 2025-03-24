@@ -2,6 +2,7 @@
 
 ## Description
 **Hatch!** est une application de coaching personnel visant à aider les utilisateurs à développer de bonnes habitudes, suivre leurs objectifs et recevoir des conseils personnalisés d’un coach virtuel.
+Ce projet a été réalisé par Inès ALLAG, Marco BUISSON, Wassim DELALA et Nadim SALEEM.
 
 ---
 
