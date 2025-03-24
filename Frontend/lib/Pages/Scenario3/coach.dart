@@ -93,7 +93,7 @@ class _CoachState extends State<Coach> {
   }
 
   //Liste pré-scriptée de recommandations habitudes
-  final List<Map<String, dynamic>> recommendations = [
+  List<Map<String, dynamic>> recommendations = [
     {
       'habitName': 'Alimentation',
       'tags': ['Nutrition', 'Bien-être'],
@@ -183,7 +183,7 @@ class _CoachState extends State<Coach> {
                       Navigator.pushNamed(context, '/choix_coach');
                     },
                     child: Image.asset(
-                      'assets/images/coach/fleches.png',
+                      '../../../assets/images/coach/fleches.png',
                       width: 30,
                       height: 30,
                       fit: BoxFit.contain,
@@ -211,12 +211,12 @@ class _CoachState extends State<Coach> {
                     fit: BoxFit.fitWidth,
                   ),
                   Positioned(
-                    bottom: 0, // marge en bas
+                    bottom: 16, // marge en bas
                     left: 24, // marge à gauche
                     child: Image.asset(
                       coachImagePath,
-                      height: 220,
-                      fit: BoxFit.contain,
+                      height: 200,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ],
@@ -225,132 +225,147 @@ class _CoachState extends State<Coach> {
 
             const SizedBox(height: 32),
 
-            // Section "Recommandations"
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            if (recommendations.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Recommandations',
+                        style: TextStyle(
+                          fontFamily: 'NunitoBold',
+                          fontSize: 21,
+                          color: Color(0xFF2F2F2F),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 180,
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    const Text(
-                      'Recommandations',
-                      style: TextStyle(
-                        fontFamily: 'NunitoBold',
-                        fontSize: 21,
-                        color: Color(0xFF2F2F2F),
+                    PageView.builder(
+                      controller: _pageController,
+                      itemCount: recommendations.length,
+                      onPageChanged: (index) {
+                        setState(() {
+                          currentIndex = index;
+                        });
+                      },
+                      itemBuilder: (context, index) {
+                        return _buildRecommendationCard(
+                          recommendations[index]['habitName'],
+                          recommendations[index]['tags'],
+                        );
+                      },
+                    ),
+                    Positioned(
+                      left: 10,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios),
+                        onPressed: () => _goToPrevious(
+                          _pageController,
+                          currentIndex,
+                          (newIndex) => setState(() => currentIndex = newIndex),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    Positioned(
+                      right: 10,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_forward_ios),
+                        onPressed: () => _goToNext(
+                          _pageController,
+                          currentIndex,
+                          recommendations.length,
+                          (newIndex) => setState(() => currentIndex = newIndex),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
+            ],
 
-            // Carrousel avec flèches de navigation
-            SizedBox(
-              height: 180,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  PageView.builder(
-                    controller: _pageController,
-                    itemCount: recommendations.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        currentIndex = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      return _buildRecommendationCard(
-                        recommendations[index]['habitName'],
-                        recommendations[index]['tags'],
-                      );
-                    },
-                  ),
-                  Positioned(
-                    left: 10,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios),
-                      onPressed: () => _goToPrevious(
-                          _pageController, currentIndex, (newIndex) {
-                        setState(() {
-                          currentIndex = newIndex;
-                        });
-                      }),
+            if (recommendations.isEmpty && objectiveRecommendations.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32),
+                child: Center(
+                  child: Text(
+                    "Je n’ai plus rien à te recommander pour le moment, n'hésite pas à revenir plus tard !",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade600,
+                      fontFamily: 'NunitoBold',
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                  Positioned(
-                    right: 10,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_forward_ios),
-                      onPressed: () => _goToNext(
-                          _pageController, currentIndex, recommendations.length,
-                          (newIndex) {
-                        setState(() {
-                          currentIndex = newIndex;
-                        });
-                      }),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
 
             const SizedBox(height: 20),
             // Carrousel des recommandations d’objectifs
-            SizedBox(
-              height: 180,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  PageView.builder(
-                    controller: _objectivesPageController,
-                    itemCount: objectiveRecommendations.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        currentObjectiveIndex = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      return _buildObjectiveCard(
-                        objectiveRecommendations[index]['objectiveName'],
-                        objectiveRecommendations[index]['relatedHabit'],
-                        objectiveRecommendations[index]['description'],
-                        objectiveRecommendations[index]['tags'],
-                      );
-                    },
-                  ),
-                  Positioned(
-                    left: 10,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios),
-                      onPressed: () => _goToPrevious(
-                          _objectivesPageController, currentObjectiveIndex,
-                          (newIndex) {
+            if (objectiveRecommendations.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              SizedBox(
+                height: 180,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PageView.builder(
+                      controller: _objectivesPageController,
+                      itemCount: objectiveRecommendations.length,
+                      onPageChanged: (index) {
                         setState(() {
-                          currentObjectiveIndex = newIndex;
+                          currentObjectiveIndex = index;
                         });
-                      }),
+                      },
+                      itemBuilder: (context, index) {
+                        return _buildObjectiveCard(
+                          objectiveRecommendations[index]['objectiveName'],
+                          objectiveRecommendations[index]['relatedHabit'],
+                          objectiveRecommendations[index]['description'],
+                          objectiveRecommendations[index]['tags'],
+                        );
+                      },
                     ),
-                  ),
-                  Positioned(
-                    right: 10,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_forward_ios),
-                      onPressed: () => _goToNext(
+                    Positioned(
+                      left: 10,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios),
+                        onPressed: () => _goToPrevious(
                           _objectivesPageController,
                           currentObjectiveIndex,
-                          objectiveRecommendations.length, (newIndex) {
-                        setState(() {
-                          currentObjectiveIndex = newIndex;
-                        });
-                      }),
+                          (newIndex) =>
+                              setState(() => currentObjectiveIndex = newIndex),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      right: 10,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_forward_ios),
+                        onPressed: () => _goToNext(
+                          _objectivesPageController,
+                          currentObjectiveIndex,
+                          objectiveRecommendations.length,
+                          (newIndex) =>
+                              setState(() => currentObjectiveIndex = newIndex),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -459,7 +474,10 @@ class _CoachState extends State<Coach> {
               // Bouton Refuser
               GestureDetector(
                 onTap: () {
-                  // Action pour refuser
+                  setState(() {
+                    recommendations
+                        .removeWhere((item) => item['habitName'] == habitName);
+                  });
                 },
                 child: Container(
                   width: 40,
@@ -567,20 +585,20 @@ class _CoachState extends State<Coach> {
                 const SizedBox(width: 16),
                 GestureDetector(
                   onTap: () {
-                    // Action pour refuser l'objectif
+                    setState(() {
+                      objectiveRecommendations.removeWhere(
+                          (item) => item['objectiveName'] == objectiveName);
+                    });
                   },
                   child: Container(
                     width: 40,
                     height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF4B77A),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF4B77A),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                    child:
+                        const Icon(Icons.close, color: Colors.white, size: 20),
                   ),
                 ),
               ],
@@ -609,7 +627,7 @@ class _CoachState extends State<Coach> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Image.asset(
-                  'assets/images/coach_popup.png',
+                  '../../../assets/images/coach_popup.png',
                   width: 70,
                   height: 70,
                   fit: BoxFit.contain,
@@ -668,6 +686,11 @@ class _CoachState extends State<Coach> {
                         'tags': tags,
                       };
                       addHabit(habitData, context);
+
+                      setState(() {
+                        recommendations.removeWhere(
+                            (item) => item['habitName'] == habitName);
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -726,7 +749,7 @@ class _CoachState extends State<Coach> {
               children: [
                 // Icône
                 Image.asset(
-                  'assets/images/coach_popup.png',
+                  '../../../assets/images/coach_popup.png',
                   width: 70,
                   height: 70,
                   fit: BoxFit.contain,
@@ -818,6 +841,14 @@ class _CoachState extends State<Coach> {
                       final objectiveData =
                           objectiveRecommendations[currentObjectiveIndex];
                       addObjective(objectiveData, context);
+
+                      setState(() {
+                        objectiveRecommendations.removeWhere(
+                          (item) =>
+                              item['objectiveName'] ==
+                              objectiveData['objectiveName'],
+                        );
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 20),

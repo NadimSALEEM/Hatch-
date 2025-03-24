@@ -53,7 +53,8 @@ class _ChoixCoachPageState extends State<CoachListPage> {
     if (response.statusCode == 200) {
       return List<Map<String, dynamic>>.from(response.data);
     } else {
-      throw Exception("Erreur lors de la récupération des coachs : ${response.statusCode}");
+      throw Exception(
+          "Erreur lors de la récupération des coachs : ${response.statusCode}");
     }
   }
 
@@ -101,18 +102,21 @@ class _ChoixCoachPageState extends State<CoachListPage> {
       print("Erreur assignation coach : $e");
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Erreur lors de l'assignation du coach.")),
+          const SnackBar(
+              content: Text("Erreur lors de l'assignation du coach.")),
         );
       }
     }
   }
 
-  void _showConfirmationDialog(String currentCoachName, String newCoachName, int newCoachId) {
+  void _showConfirmationDialog(
+      String currentCoachName, String newCoachName, int newCoachId) {
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -123,7 +127,8 @@ class _ChoixCoachPageState extends State<CoachListPage> {
                 Text(
                   "Voulez-vous changer\n$currentCoachName pour $newCoachName ?",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
                 const Text(
@@ -137,19 +142,23 @@ class _ChoixCoachPageState extends State<CoachListPage> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF8F7CF8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 14),
                     ),
                     onPressed: () {
                       Navigator.of(context).pop();
                       assignCoach(newCoachId);
                     },
-                    child: const Text("Confirmer", style: TextStyle(color: Colors.white)),
+                    child: const Text("Confirmer",
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("Annuler", style: TextStyle(color: Colors.black)),
+                  child: const Text("Annuler",
+                      style: TextStyle(color: Colors.black)),
                 ),
               ],
             ),
@@ -168,7 +177,8 @@ class _ChoixCoachPageState extends State<CoachListPage> {
       fit: BoxFit.cover,
     );
 
-    final backgroundColor = isCurrent ? const Color(0xFF9381FF) : Colors.grey.shade100;
+    final backgroundColor =
+        isCurrent ? const Color(0xFF9381FF) : Colors.grey.shade100;
     final textColor = isCurrent ? Colors.white : Colors.black;
 
     return Container(
@@ -213,7 +223,8 @@ class _ChoixCoachPageState extends State<CoachListPage> {
                     alignment: Alignment.bottomRight,
                     child: ElevatedButton(
                       onPressed: () {
-                        _showConfirmationDialog("votre coach actuel", coach['nom'], coachId);
+                        _showConfirmationDialog(
+                            "votre coach actuel", coach['nom'], coachId);
                       },
                       child: const Text("Choisir ce coach"),
                     ),
@@ -229,8 +240,10 @@ class _ChoixCoachPageState extends State<CoachListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentCoach = coachList.where((c) => c['id'] == currentCoachId).toList();
-    final otherCoaches = coachList.where((c) => c['id'] != currentCoachId).toList();
+    final currentCoach =
+        coachList.where((c) => c['id'] == currentCoachId).toList();
+    final otherCoaches =
+        coachList.where((c) => c['id'] != currentCoachId).toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text("Changement de coach")),
@@ -242,14 +255,44 @@ class _ChoixCoachPageState extends State<CoachListPage> {
                 children: [
                   const Padding(
                     padding: EdgeInsets.all(16.0),
-                    child: Text("Votre coach actuel :", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    child: Text("Votre coach actuel :",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
-                  if (currentCoach.isNotEmpty) buildCoachCard(currentCoach.first, isCurrent: true),
+                  if (currentCoach.isNotEmpty)
+                    buildCoachCard(currentCoach.first, isCurrent: true),
                   const Padding(
                     padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
-                    child: Text("Autres coachs disponibles :", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    child: Text("Autres coachs disponibles :",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
                   ...otherCoaches.map((c) => buildCoachCard(c)).toList(),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.replay, color: Colors.white),
+                        label: const Text(
+                          "Repasser le questionnaire",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFFAB96FF),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () {
+                          Navigator.pushReplacementNamed(
+                              context, '/questionnaire');
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
