@@ -13,7 +13,8 @@ class CreerHabitude extends StatefulWidget {
 class _CreerHabitudeState extends State<CreerHabitude> {
   final TextEditingController _habitsNameController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
-  final TextEditingController _objectiveNameController = TextEditingController();
+  final TextEditingController _objectiveNameController =
+      TextEditingController();
   final List<String> _tags = [];
   String? _selectedPriority = "moyenne";
   String? _selectedPeriod;
@@ -48,145 +49,147 @@ class _CreerHabitudeState extends State<CreerHabitude> {
     });
   }
 
-
-Future<void> _createHabit() async {
-  setState(() => _isLoading = true);
-  try {
-    // Récupérer le token JWT
-    String? token = await _secureStorage.read(key: "jwt_token");
-    if (token == null || token.isEmpty) throw Exception("Token non trouvé");
-
-    // Récupérer et valider le nom de l'habitude
-    String habitName = _habitsNameController.text.trim();
-    if (habitName.isEmpty) {
-      throw Exception("Le nom de l'habitude ne peut pas être vide");
-    }
-
-    // Créer l'habitude
-    Response responseHabitude = await _dio.post(
-      "http://localhost:8080/habits/create",
-      data: {
-        "nom": habitName,
-        "statut": 1,
-        "freq": "quotidien",
-        "prio": _selectedPriority,
-        "desc": "",
-        "labels": _tags,
-      },
-      options: Options(headers: {"Authorization": "Bearer $token"}),
-    );
-
-    int? habitId;
-    int? userId;
-
-    // Vérifier si l'API renvoie directement l'ID et `user_id`
-    if (responseHabitude.statusCode == 201 && responseHabitude.data != null) {
-      if (responseHabitude.data.containsKey("id")) {
-        habitId = responseHabitude.data["id"];
-      }
-      if (responseHabitude.data.containsKey("user_id")) {
-        userId = responseHabitude.data["user_id"];
-      }
-      print("ID de l'habitude: $habitId, ID de l'utilisateur: $userId");
-    }
-
-    // Si `habit_id` est null, récupérer avec une requête GET
-    if (habitId == null) {
-      Response responseAllHabits = await _dio.get(
-        "http://localhost:8080/habits",
-        options: Options(headers: {"Authorization": "Bearer $token"}),
-      );
-
-      if (responseAllHabits.statusCode == 200 && responseAllHabits.data is List) {
-        List habits = responseAllHabits.data;
-        if (habits.isNotEmpty) {
-          var lastHabit = habits.last;
-          habitId = lastHabit["id"];
-          print("ID récupéré depuis la liste des habitudes: $habitId");
-        }
-      }
-    }
-
-    // Vérifier si on a bien `habit_id` et `user_id` avant de continuer
-    if (habitId == null || userId == null) {
-      throw Exception("Impossible de récupérer les IDs nécessaires");
-    }
-
-    // Créer les objectifs associés (si la liste n'est pas vide)
-    if (_objectifs.isNotEmpty) {
-  for (var objectif in _objectifs) {
+  Future<void> _createHabit() async {
+    setState(() => _isLoading = true);
     try {
-      print("Envoi objectif: ${objectif["nom"]}, habit_id=$habitId, user_id=$userId");
-      print("Données envoyées: $objectif");
+      // Récupérer le token JWT
+      String? token = await _secureStorage.read(key: "jwt_token");
+      if (token == null || token.isEmpty) throw Exception("Token non trouvé");
 
-      Response responseObjectif = await _dio.post(
-        "http://localhost:8080/habits/$habitId/objectifs/create",  // 🔥 Correction ici
+      // Récupérer et valider le nom de l'habitude
+      String habitName = _habitsNameController.text.trim();
+      if (habitName.isEmpty) {
+        throw Exception("Le nom de l'habitude ne peut pas être vide");
+      }
+
+      // Créer l'habitude
+      Response responseHabitude = await _dio.post(
+        "http://localhost:8080/habits/create",
         data: {
-          "habit_id": habitId,  // Associer l'objectif à l'habitude
-          "user_id": userId,  // Associer l'objectif à l'utilisateur
-          "nom": objectif["nom"],  
-          "statut": objectif["statut"] ?? 1,  // Statut actif (par défaut = 1)
-          "compteur": objectif["compteur"] ?? 0,  // Valeur par défaut = 0
-          "total": objectif["total"] ?? 100,  // Objectif final (modifiable)
-          "unite_compteur": objectif["unite_compteur"] ?? "fois",  // Unité par défaut
-          "modules": objectif["modules"] ?? {},  // Modules interactifs activés
-          "rappel_heure": objectif["rappel_heure"],  // Peut être null
-          "historique_progression": objectif["historique_progression"] ?? [],  // Historique vide par défaut
+          "nom": habitName,
+          "statut": 1,
+          "freq": "quotidien",
+          "prio": _selectedPriority
+              ?.toLowerCase(), // Pour s'assurer que c'est en minuscules
+          "desc": null, // Au lieu de "", si pas de description
+          "labels": _tags,
         },
         options: Options(headers: {"Authorization": "Bearer $token"}),
       );
 
-      if (responseObjectif.statusCode == 201) {
-        print("Objectif '${objectif["nom"]}' créé avec succès !");
-      } else {
-        print("Échec de création de l'objectif: ${objectif["nom"]}");
+      int? habitId;
+      int? userId;
+
+      // Vérifier si l'API renvoie directement l'ID et `user_id`
+      if (responseHabitude.statusCode == 201 && responseHabitude.data != null) {
+        if (responseHabitude.data.containsKey("id")) {
+          habitId = responseHabitude.data["id"];
+        }
+        if (responseHabitude.data.containsKey("user_id")) {
+          userId = responseHabitude.data["user_id"];
+        }
+        print("ID de l'habitude: $habitId, ID de l'utilisateur: $userId");
       }
+
+      // Si `habit_id` est null, récupérer avec une requête GET
+      if (habitId == null) {
+        Response responseAllHabits = await _dio.get(
+          "http://localhost:8080/habits",
+          options: Options(headers: {"Authorization": "Bearer $token"}),
+        );
+
+        if (responseAllHabits.statusCode == 200 &&
+            responseAllHabits.data is List) {
+          List habits = responseAllHabits.data;
+          if (habits.isNotEmpty) {
+            var lastHabit = habits.last;
+            habitId = lastHabit["id"];
+            print("ID récupéré depuis la liste des habitudes: $habitId");
+          }
+        }
+      }
+
+      // Vérifier si on a bien `habit_id` et `user_id` avant de continuer
+      if (habitId == null || userId == null) {
+        throw Exception("Impossible de récupérer les IDs nécessaires");
+      }
+
+      // Créer les objectifs associés (si la liste n'est pas vide)
+      if (_objectifs.isNotEmpty) {
+        for (var objectif in _objectifs) {
+          try {
+            print(
+                "Envoi objectif: ${objectif["nom"]}, habit_id=$habitId, user_id=$userId");
+            print("Données envoyées: $objectif");
+
+            Response responseObjectif = await _dio.post(
+              "http://localhost:8080/habits/$habitId/objectifs/create", // 🔥 Correction ici
+              data: {
+                "habit_id": habitId, // Associer l'objectif à l'habitude
+                "user_id": userId, // Associer l'objectif à l'utilisateur
+                "nom": objectif["nom"],
+                "statut":
+                    objectif["statut"] ?? 1, // Statut actif (par défaut = 1)
+                "compteur": objectif["compteur"] ?? 0, // Valeur par défaut = 0
+                "total":
+                    objectif["total"] ?? 100, // Objectif final (modifiable)
+                "unite_compteur":
+                    objectif["unite_compteur"] ?? "fois", // Unité par défaut
+                "modules":
+                    objectif["modules"] ?? {}, // Modules interactifs activés
+                "rappel_heure": objectif["rappel_heure"], // Peut être null
+                "historique_progression": objectif["historique_progression"] ??
+                    [], // Historique vide par défaut
+              },
+              options: Options(headers: {"Authorization": "Bearer $token"}),
+            );
+
+            if (responseObjectif.statusCode == 201) {
+              print("Objectif '${objectif["nom"]}' créé avec succès !");
+            } else {
+              print("Échec de création de l'objectif: ${objectif["nom"]}");
+            }
+          } catch (e) {
+            print(
+                "Erreur lors de l'ajout de l'objectif '${objectif["nom"]}': $e");
+          }
+        }
+      }
+
+      // Afficher un message de succès
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Habitude '$habitName' créée avec succès !"),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Redirection après création
+      Navigator.pushNamed(context, '/post_creation_habitude');
     } catch (e) {
-      print("Erreur lors de l'ajout de l'objectif '${objectif["nom"]}': $e");
+      // Gestion des erreurs Dio
+      if (e is DioError) {
+        print("Erreur Dio: ${e.response?.statusCode}");
+        print("Réponse API: ${e.response?.data}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Erreur API: ${e.response?.data}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        print("Erreur inattendue: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Erreur: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
-}
-
-
-
-
-
-
-    // Afficher un message de succès
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Habitude '$habitName' créée avec succès !"),
-        backgroundColor: Colors.green,
-      ),
-    );
-
-    // Redirection après création
-    Navigator.pushNamed(context, '/post_creation_habitude');
-  } catch (e) {
-    // Gestion des erreurs Dio
-    if (e is DioError) {
-      print("Erreur Dio: ${e.response?.statusCode}");
-      print("Réponse API: ${e.response?.data}");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Erreur API: ${e.response?.data}"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } else {
-      print("Erreur inattendue: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Erreur: $e"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  } finally {
-    setState(() => _isLoading = false);
-  }
-}
-
 
   //Appel de la popup de création d'objectifs
   void _showCreateObjectiveDialog() {
@@ -211,22 +214,22 @@ Future<void> _createHabit() async {
   }
 
   //Ajout d'objectif à la liste
-  void _addObjective(String name, String period, String type, Map<String, bool> modules) {
+  void _addObjective(
+      String name, String period, String type, Map<String, bool> modules) {
     setState(() {
       _objectifs.add({
         "nom": name,
         "periode": period,
         "type": type,
         "modules": modules,
-        "compteur": 0,  // Progression initiale
-        "total": 100,   // Objectif final par défaut (modifiable)
+        "compteur": 0, // Progression initiale
+        "total": 100, // Objectif final par défaut (modifiable)
         "unite_compteur": "fois", // Unité par défaut
-        "statut": 1,  // Actif par défaut
-        "rappel_heure": null  // Pas de rappel par défaut
+        "statut": 1, // Actif par défaut
+        "rappel_heure": null // Pas de rappel par défaut
       });
     });
   }
-
 
   //Appel de la popup de modification d'objectifs
   void _showEditObjectiveDialog(Map<String, dynamic> objectif) {
@@ -605,7 +608,7 @@ Future<void> _createHabit() async {
     );
   }
 
- Widget _buildCreateHabitButton() {
+  Widget _buildCreateHabitButton() {
     return Center(
       child: Container(
         width: MediaQuery.of(context).size.width * 0.6,
