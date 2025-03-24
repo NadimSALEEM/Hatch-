@@ -252,16 +252,16 @@ Widget _buildPeriodSelector() {
 // Affiche le graphique en fonction de la période sélectionnée
 Widget _buildGraphForPeriod() {
   if (_selectedPeriod[0]) {
-    return _buildBarChart(); // ✅ BarChart pour la semaine
+    return _buildBarChart(); // BarChart pour la semaine
   } else if (_selectedPeriod[1]) {
-    return _buildMonthlyBarChart(); // ✅ BarChart pour le mois
+    return _buildMonthlyBarChart(); // BarChart pour le mois
   } else {
-    return _buildYearlyBarChart(); // ✅ BarChart pour l'année
+    return _buildYearlyBarChart(); // BarChart pour l'année
   }
 }
 
 
-// 📊 Graphique pour la SEMAINE
+// Graphique pour la semaine
 Widget _buildBarChart() {
   return SizedBox(
     height: 200,
@@ -278,7 +278,7 @@ Widget _buildBarChart() {
             )
           ],
         )),
-        titlesData: FlTitlesData( // ✅ Correction ici
+        titlesData: FlTitlesData( // Correction ici
           leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(

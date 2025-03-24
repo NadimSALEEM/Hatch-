@@ -60,10 +60,10 @@ def lire_objectif(
     if not objectif:
         raise HTTPException(status_code=404, detail="Objectif non trouvé")
 
-    # ✅ Vérifier que l'historique est bien chargé
+    # Vérifier que l'historique est bien chargé
     logger.info(f"Valeur récupérée pour historique_progression : {objectif.historique_progression}")
 
-    # ✅ Assurer que historique_progression est bien une liste
+    # Assurer que historique_progression est bien une liste
     if not isinstance(objectif.historique_progression, list):
         objectif.historique_progression = []
 
@@ -209,7 +209,7 @@ def ajouter_progression(
             "historique_progression": objectif.historique_progression
         }
 
-    # 📌 Récupération des valeurs envoyées par l'utilisateur
+    # Récupération des valeurs envoyées par l'utilisateur
     compteur_value = progression_data.get("compteur", 0)
     checkbox_value = progression_data.get("checkbox", False)
     chrono_value = progression_data.get("chrono", 0)
@@ -242,7 +242,7 @@ def ajouter_progression(
     objectif.historique_progression.append(progression_entry)
 
     # **Calcul du score global de progression (%)**
-    if checkbox_value:  # ✅ Si la checkbox est cochée, l'objectif est à 100%
+    if checkbox_value:  # Si la checkbox est cochée, l'objectif est à 100%
         total_score = 100
     else:
         total_score = 0

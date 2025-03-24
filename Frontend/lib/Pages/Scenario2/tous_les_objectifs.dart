@@ -40,7 +40,7 @@ class _TousLesObjectifsState extends State<TousLesObjectifs> {
       if (response.statusCode == 200) {
         setState(() {
           _objectifs = response.data;
-           _objectifs.sort((a, b) => b["statut"].compareTo(a["statut"])); // 🔥 Trie les actifs en premier
+           _objectifs.sort((a, b) => b["statut"].compareTo(a["statut"])); // Trie les actifs en premier
           _isLoading = false;
         });
       } else {

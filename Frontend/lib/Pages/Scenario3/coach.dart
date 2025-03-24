@@ -675,7 +675,7 @@ class _CoachState extends State<Coach> {
                 ),
                 const SizedBox(height: 25),
 
-                // ✅ Appel de addHabit ici
+                // Appel d'addHabit
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -908,7 +908,7 @@ class _CoachState extends State<Coach> {
 
     try {
       final response = await dio.post(
-        "http://localhost:8080/habits/create", // 🔁 Remplace par ton IP locale
+        "http://localhost:8080/habits/create", // Remplace par ton IP locale
         options: Options(
           headers: {
             "Content-Type": "application/json",
@@ -999,19 +999,19 @@ class _CoachState extends State<Coach> {
           });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("✅ Objectif ajouté avec succès");
+        print("Objectif ajouté avec succès");
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Objectif ajouté avec succès !")),
           );
         }
       } else {
-        print("⚠️ Erreur lors de l'ajout : ${response.data}");
+        print("Erreur lors de l'ajout : ${response.data}");
       }
     } catch (e) {
-      print("❌ Erreur Dio : $e");
+      print("Erreur Dio : $e");
       if (e is DioException && e.response != null) {
-        print("🪵 Réponse backend : ${e.response!.data}");
+        print("Réponse backend : ${e.response!.data}");
       }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

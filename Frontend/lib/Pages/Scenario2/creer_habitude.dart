@@ -71,7 +71,7 @@ class _CreerHabitudeState extends State<CreerHabitude> {
           "freq": "quotidien",
           "prio": _selectedPriority
               ?.toLowerCase(), // Pour s'assurer que c'est en minuscules
-          "desc": null, // Au lieu de "", si pas de description
+          "desc": null,
           "labels": _tags,
         },
         options: Options(headers: {"Authorization": "Bearer $token"}),

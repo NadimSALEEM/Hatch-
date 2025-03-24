@@ -257,7 +257,7 @@ Widget _buildImageContainer(BuildContext context) {
             Navigator.pushNamed(
               context,
               '/habitude',
-              arguments: {'habitId': habit["id"]}, // Utiliser l'ID réel de l'habitude
+              arguments: {'habitId': habit["id"]},
             );
           },
           child: Card(

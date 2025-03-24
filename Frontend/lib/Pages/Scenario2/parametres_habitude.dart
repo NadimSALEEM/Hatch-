@@ -215,7 +215,7 @@ class _ParametresHabitudeState extends State<ParametresHabitude> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Nom de l'habitude (readonly)
+                      // Nom de l'habitude (read only)
                       const Text(
                         'Nom de l\'habitude',
                         style: TextStyle(

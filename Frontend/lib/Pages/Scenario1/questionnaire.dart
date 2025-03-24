@@ -241,12 +241,12 @@ class _QuestionnaireState extends State<Questionnaire> {
       );
 
       if (response.statusCode == 200) {
-        print("✅ Coach mis à jour avec succès !");
+        print("Coach mis à jour avec succès !");
       } else {
-        print("⚠️ Erreur lors de la mise à jour : ${response.statusCode}");
+        print("Erreur lors de la mise à jour : ${response.statusCode}");
       }
     } catch (e) {
-      print("❌ Erreur de requête : $e");
+      print("Erreur de requête : $e");
     }
   }
 
