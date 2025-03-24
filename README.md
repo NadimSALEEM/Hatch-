@@ -12,7 +12,6 @@
 - **Structure** :
   - Le point d'entrée est `main.dart`
   - Pages dans `Pages/` et services dans `Services/`
-  - Localisation supportée : `fr-FR`, `en-US`
   - Système de routing personnalisé avec guard d'authentification
 
 ---
