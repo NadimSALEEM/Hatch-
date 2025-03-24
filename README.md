@@ -13,6 +13,7 @@ Ce projet a été réalisé par Inès ALLAG, Marco BUISSON, Wassim DELALA et Nad
 - **Structure** :
   - Le point d'entrée est `main.dart`
   - Pages dans `Pages/` et services dans `Services/`
+  - Localisation supportée : `fr-FR`, `en-US`
   - Système de routing personnalisé avec guard d'authentification
 
 ---
@@ -26,6 +27,18 @@ Ce projet a été réalisé par Inès ALLAG, Marco BUISSON, Wassim DELALA et Nad
   - ORM : SQLAlchemy
   - Authentification : OAuth2 + JWT
   - Conteneurisation : Docker (`docker-compose.yml`)
+
+---
+
+## 🚧 Infrastructure Docker
+
+Le projet repose sur une architecture multi-conteneurs via Docker Compose :
+
+- **api** : Conteneur principal FastAPI servant l'API REST.
+- **db** : Conteneur PostgreSQL pour le stockage des données utilisateurs, habitudes, objectifs...
+- **adminer** : Interface web de gestion de base de données pour visualiser et interagir avec PostgreSQL.
+
+> Aucun volume persistant n'est configuré actuellement. Les données sont donc éphémères.
 
 ---
 
@@ -78,4 +91,6 @@ Ce projet a été réalisé par Inès ALLAG, Marco BUISSON, Wassim DELALA et Nad
 | POST   | `/habits/{hid}/objectifs/{oid}/addprogress`                           | Ajouter une progression (calcul du score) |
 
 ---
+
+> ✨ Application multilingue, orientée utilisateur, évolutive et facilement extensible.
 
